@@ -62,6 +62,11 @@ logit <- function(p){
 
 goose_rescale_AIG <- function(data, years = 22){
   
+    ### goose_rescale_AIG()
+    ###
+    ### Rescales AIG values in input data and produces AIG.sc column.
+    ### Addresses the fact pre-2008, AIG was measured in a different way to later years.
+  
     AIGs   <- data$AIG[1:years];         # Take the years before the change
     tii    <- 1:years;                   # Corresponding time variable
     DATg   <- data.frame(AIGs,tii);      # Create dataframe with grass and time
@@ -81,24 +86,36 @@ goose_rescale_AIG <- function(data, years = 22){
 
 goose_clean_data <- function(file){
   
+    ### goose_clean_data()
+    ### 
+    ### Single argument, which is a character string of the input file to be loaded.
+    ### - Calls load_input()
+    ### - Calculates 'working' data, i.e. total number of geese, scales/standardises 
+    ###    input variables for model fit.
+    ### - Calculates total number culled on Iceland and Greenland as variable HB, 
+    ###    ignoring any NA's.
+  
     data   <- load_input(file);              # Load dataset
     
-        ### data$y is the observed count plus the number culled on Islay:
+    # data$y is the observed count plus the number culled on Islay:
     data$y <- data$Count+data$IslayCull
       
+    # Rescale AIG ensuring consistency in measurementS:
     data   <- goose_rescale_AIG(data = data, years = 22);
-  
+    
+    # Scale/standardise environmental variables:
     data$AugTemp   <- as.numeric( scale(data$AugTemp) )
     data$IslayTemp <- as.numeric( scale(data$IslayTemp) )
     data$AugRain   <- as.numeric( scale(data$AugRain) )
     data$AIG.sc    <- as.numeric( scale(data$AIG) )
+    
+    # The following ensures that if either G'land or Iceland culls were unavailable 
+    #  (NA) but the other was, the missing number is treated as zero, i.e. the total 
+    #  culled on G'land and Icelan#d (HB) is always at least the number available for 
+    #  one of them (i.e. avoid NA's in a sum including NA's):
+    
     data$IcelandCull[is.na(data$IcelandCull)] <- 0
     data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
-    
-        ### The following ensures that if either G'land or Iceland culls were unavailable (NA) but the other was, the 
-        ###  missing number is treated as zero, i.e. the total culled on G'land and Iceland (HB) is always at least the number
-        ###  available for one of them (i.e. avoid NA's in a sum including NA's):
-    
     data$HB <- data$IcelandCull+data$GreenlandCull
     data$HB[data$HB==0] <- NA
     data$IcelandCull[data$IcelandCull==0] <- NA
@@ -109,37 +126,66 @@ goose_clean_data <- function(file){
 
 goose_growth <- function(para, data){
   
+  ### goose_growth()
+  ###
+  ### Takes fitted model parameters and data as arguments.
+  ###  - Calculates prediction using goose population model (goose_pred()) and returns 
+  ###    measure of model fit (sum of squared deviations).
+  ###  - Used in model fitting (optimisation) function
+  
     data_rows <- dim(data)[1];
     N_pred <- goose_pred(para = para, data = data);
   
     DEV    <- N_pred[3:data_rows] - data$y[3:data_rows];
     sq_Dev <- DEV * DEV;
     pr_sum <- sum( sq_Dev / N_pred[3:data_rows] );
-    SS_tot <- (1 / pr_sum) * 1000;
+    SS_tot <- (1 / pr_sum) * 1000;   # Total sum of squares, scaled for convenience
     return(SS_tot);
 }
 
 goose_pred <- function(para, data){
+  
+  ### goose_pred()
+  ### 
+  ### MAIN POPULATION MODEL PREDICTION FUNCTION
+  ###
+  ### Takes optimised parameters and data as input
+  ###  - Extract input parameters from para vector.
+  ###  - Produce a prediction for each line in the data, given environmental variables.
+  ###  - Returns vector of predictions.
+  
   r_val        <- para[1];              # Maximum growth rate
   K_val        <- para[2];              # Carrying capacity
   G_rain_coeff <- para[3];              # Effect of precipitation on Greenland in August
   G_temp_coeff <- para[4];              # Effect of temperature on Greenland in August
   I_temp_coeff <- para[5];              # Effect of temperature on Islay the previous winter
   AIG_2_yrs    <- para[6];              # Effect of area of improved grassland 2 years prior
-  #hunting_bag  <- para[7];             # Effect of hunting bag on G'land and Iceland - NO LONGER USED, SEE BELOW
-  
+
+  # Make as many predictions as there are lines in data:
   data_rows <- dim(data)[1];
   N_pred    <- rep(x = NA, times = data_rows);
+  
+  # Starting at year 3 (we need data from at least 2 years ago), run through each input line.
   for(time in 3:data_rows){
+      # Reproduction rate is max growth rate times previous years' population size
       goose_repr   <- r_val * data$y[time - 1];
+      # Goose density/carrying capacity term is function of numbers in previous year, K and AIG
       goose_dens   <- 1 - (data$y[time -1] / (K_val * data$AIG[time - 1]));
+      # 'Current' population (previous year)
       goose_now    <- data$y[time - 1];
+      # Effect of rainfall in Greenland in previous year
       G_rain_adj   <- G_rain_coeff * data$AugRain[time - 1];
+      # Effect of temperature of Greenland in previous year
       G_temp_adj   <- G_temp_coeff * data$AugTemp[time - 1];
+      # Effect of temperature on Islay in previous year
       I_temp_adj   <- I_temp_coeff * data$IslayTemp[time - 1];
+      # Effect of AIG on Islay in the year before last
       AIG_2_adj    <- AIG_2_yrs    * data$AIG.sc[time - 2];
+      # Sum the combined effect of above effects for convenience
       adjusted     <- G_rain_adj + G_temp_adj + I_temp_adj + AIG_2_adj
-      #hunted       <- hunting_bag  * goose_now;                                # This was the 'old' version of removing a proportion
+      # Next years' population size is reproduction rate times the density term, adjusted by 
+      #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
+      #  as the mean of the previous years' take there.
       N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB, na.rm=T);    
       
       ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER culling on G'land and Iceland,

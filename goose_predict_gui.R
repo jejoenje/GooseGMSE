@@ -267,9 +267,14 @@ sim_goose_data <- function(gmse_results, goose_data){
     ### - Calls goose_fill_missing() to ensure all previous years' data are available, or when not, sampled from previous years.
     ### - Generates a new line of future data, using output from GMSE (and thus the goose population model), and randomly samples
     ###    new environmental data for this year.
+    ### - Adds this new line of data and return - value y is used as the basis for next year's projection.
     
+    # gmse_pop holds the 'resource_results' from GMSE; i.e. the population projection for one year ahead.
     gmse_pop   <- gmse_results$resource_results;
+    # gmse_obs holds the GMSE observation results.
     gmse_obs   <- gmse_results$observation_results;
+    
+    # gmse_man and gmse_cul holds GMSE manager results and GMSE user results, respectively.
     if(length(gmse_results$manager_results) > 1){
         gmse_man   <- gmse_results$manager_results[3];
     }else{
@@ -280,28 +285,54 @@ sim_goose_data <- function(gmse_results, goose_data){
     }else{
         gmse_cul   <- as.numeric(gmse_results$user_results);
     }
-    #I_G_cul_pr <- (goose_data[,3] + goose_data[,5]) / goose_data[,10];
-    #I_G_cul_pr <- mean(I_G_cul_pr[-length(I_G_cul_pr)]);
+    
+    # Call goose_fill_missing() to address any missing values in the last input file line 
+    #  (e.g. latest Iceland or Greenland cull data missing).
     goose_data <- goose_fill_missing(goose_data);
+    
+    # Some counters.
     rows       <- dim(goose_data)[1];
     cols       <- dim(goose_data)[2];
-    #goose_data[rows, 3]    <- gmse_obs * I_G_cul_pr;     # This would set the last "current" values to something different to observed values? 
-    #goose_data[rows, 4]    <- 0;
-    #goose_data[rows, 5]    <- 0;
-    #goose_data[rows, cols] <- gmse_cul;
+    
+    # Build new line of data (new projection), same number of columns as goose_data
     new_r     <- rep(x = 0, times = cols);
+    
+    # YEAR: New year is last year plus 1:
     new_r[1]  <- goose_data[rows, 1] + 1;
-    new_r[2]  <- gmse_pop - gmse_cul;  # COUNT: Should this be the same as col 10 ('Y')??? So this now is the count on Islay AFTER the culled birds have been taken?
-    new_r[3]  <- NA;                   # These were all set to zero ???
-    new_r[4]  <- gmse_cul;             # These were all set to zero ??? Surely this must be what should be culled on Islay (ie Manager output from GMSE?)
-    new_r[5]  <- NA;                   # These were all set to zero ???
+    
+    # COUNT: New population count is the number projected by GMSE minus the number proposed culled 
+    #  (starting point for population projection for following year):
+    new_r[2]  <- gmse_pop - gmse_cul;
+    
+    # ICELANDCULL: Set to NA as we are not explicitly separating numbers culled on either Iceland 
+    #  or Greenland (See HB below).
+    new_r[3]  <- NA;                   
+    
+    # ISLAYCULL: Number proposed culled on Islay in projected year.
+    new_r[4]  <- gmse_cul;             
+    
+    # GREENLANDCULL: Set to NA as we are not explicitly separating numbers culled on either Iceland 
+    #  or Greenland.
+    new_r[5]  <- NA;                  
+    
+    # Future AIG, IslayTemp, AugRain and AugTemp are sampled randomly from previous years' data:
     new_r[6]  <- sample_noNA(goose_data[,6]);
     new_r[7]  <- sample_noNA(goose_data[,7]);
     new_r[8]  <- sample_noNA(goose_data[,8]);
     new_r[9]  <- sample_noNA(goose_data[,9]);
-    new_r[10] <- gmse_pop - gmse_cul;  # Y: Should this be the same as col 10 ('COUNT')???
+    
+    # y: In observed years this was count + no. culled on Islay, in projected years this is GMSE 
+    #  projection MINUS numbers proposed culled on Islay (i.e. the number culled on Islay is assumed 
+    #  to be exactly what was set as the target cull). This is the population number used as the 
+    #  starting point for next year's projection.
+    new_r[10] <- gmse_pop - gmse_cul; 
+    
+    # Future AIG.sc and HB (total hunting bag on Iceland and Greenland) are sampled randomly from 
+    #  previous years' data.
     new_r[11] <- sample_noNA(goose_data[,11]);
     new_r[12] <- sample_noNA(goose_data[,12]);
+    
+    # Add new projected data to existing data, and return:
     new_dat   <- rbind(goose_data, new_r);
     return(new_dat);
 }

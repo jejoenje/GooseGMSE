@@ -221,7 +221,7 @@ get_goose_paras <- function(data, init_params = NULL){
     
     # Updates progress bar when running as Shiny app
     if(exists("progress_i")) {
-        progress_i <- progress_i+1_
+        progress_i <- progress_i+1
         assign("progress_i", progress_i, envir = globalenv())
         progress$set(value = progress_i)
     }
@@ -559,8 +559,8 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
     box();
     points(x = yrs[obsrvd], y = NN[obsrvd], cex = 1.25, pch = 20, type = "b");
     abline(h = manage_target, lwd = 0.8, lty = "dotted");
-    text(x = dat[5,1], y = max(NN+10), labels = "Observed", cex = 1.25);
-    text(x = pry[length(pry)], y = max(NN+10), labels = "Projected", cex = 1.25, pos = 2);
+    text(x = dat[5,1], y = 0, labels = "Observed", cex = 1.25);
+    text(x = pry[length(pry)], y = 0, labels = "Projected", cex = 1.25, pos = 2);
     for(i in 1:length(goose_multidata)){
         goose_data <- goose_multidata[[i]];
         dat <- goose_data[-1,];

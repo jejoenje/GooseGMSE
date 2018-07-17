@@ -221,7 +221,7 @@ get_goose_paras <- function(data, init_params = NULL){
     
     # Updates progress bar when running as Shiny app
     if(exists("progress_i")) {
-        progress_i <- progress_i+1
+        progress_i <- progress_i+1_
         assign("progress_i", progress_i, envir = globalenv())
         progress$set(value = progress_i)
     }
@@ -256,18 +256,26 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
     return(Npred);
 }
 
-goose_predict_and_plot <- function(file, plot = TRUE){
-    dat    <- read.csv(file);
-    data   <- goose_clean_data(file);
-    goosep <- goose_plot_pred(data = data, plot = plot);
-    return(goosep);
-}
+# goose_predict_and_plot <- function(file, plot = TRUE){
+#     dat    <- read.csv(file);
+#     data   <- goose_clean_data(file);
+#     goosep <- goose_plot_pred(data = data, plot = plot);
+#     return(goosep);
+# }
 
 goose_gmse_popmod <- function(goose_data){
+  
+    ### goose_gmse_popmod()
+    ###
+    ### Population model for use in gmse().
+    ### - Calls goose_plot_pred(), which in turns obtains optimised parameter estimates and a
+    ###    population model prediction.
+    ### - Returns a single new population projection for a following year.
+  
     N_pred <- goose_plot_pred(data = goose_data, plot = FALSE);
     N_last <- length(N_pred);
     New_N  <- as.numeric(N_pred[N_last]);
-    #New_N  <- New_N - (0.03 * New_N);                          #  Err no?
+
     if(New_N < 1){
         New_N <- 1;
         warning("Extinction has occurred");
@@ -276,6 +284,13 @@ goose_gmse_popmod <- function(goose_data){
 }
 
 goose_gmse_obsmod <- function(resource_vector, obs_error, use_est){
+  
+    ### goose_gmse_obsmod()
+    ###
+    ### Observation model for gmse()
+    ###  - Returns an observed population size given obs_error in the observation 
+    ###  - use_est allows for return optimistic or pessimistic bounds.
+    
     obs_err    <- rnorm(n = 1, mean = 0, sd = obs_error);
     obs_vector <- resource_vector + obs_err;
     if(use_est == -1){
@@ -288,6 +303,14 @@ goose_gmse_obsmod <- function(resource_vector, obs_error, use_est){
 }
 
 goose_gmse_manmod <- function(observation_vector, manage_target){
+  
+    ### goose_gmse_manmod()
+    ###
+    ### Manager model for gmse()
+    ###  - Simply returns the difference between the observed population size
+    ###     and the population target (manage_target), or zero if this difference
+    ###     is negative. This is the target cull number.
+  
     manager_vector <- observation_vector - manage_target;
     if(manager_vector < 0){
         manager_vector <- 0;
@@ -296,29 +319,19 @@ goose_gmse_manmod <- function(observation_vector, manage_target){
 }
 
 goose_gmse_usrmod <- function(manager_vector, max_HB){
+  
+    ### goose_gmse_usrmod()
+    ###
+    ### User model for gmse()
+    ###  - Simply implements the manager_vector, or max_HB. I.e. the user does exactly 
+    ###     what the manager says.
+  
     user_vector <- manager_vector;
     if(user_vector > max_HB){
         user_vector <- max_HB;
     }
     return(user_vector);
 }
-
-# goose_sim_paras <- function(goose_data){
-#     last_row <- dim(goose_data)[1];
-#     for(col in 1:dim(goose_data)[2]){
-#         if( is.na(goose_data[last_row, col]) == TRUE ){
-#             if(col < 6){
-#                 goose_data[last_row, col] <- 0;
-#             }else{
-#                 all_dat   <- goose_data[,col];
-#                 avail_dat <- all_dat[!is.na(all_dat)];
-#                 rand_val  <- sample(x = avail_dat, size = 1);
-#                 goose_data[last_row, col] <- rand_val;
-#             }
-#         }
-#     }
-#     return(goose_data);
-# }
 
 goose_fill_missing <- function(goose_data){
 

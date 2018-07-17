@@ -209,7 +209,7 @@ get_goose_paras <- function(data, init_params = NULL){
     
     # Set init parameters if not provided
     if( is.null(init_params) == TRUE ){
-        init_params    <- c(0.1,6,0,0,0,0, 0);
+        init_params    <- c(0.1,6,0,0,0,0);                
     }
     # Set control parameters for optim() function:
     contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
@@ -241,7 +241,14 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
     ### - May produce a plot of predictions if requested (plot= argument)
     ### - Returns vector of population predictions (Npred)  
   
-    params <- get_goose_paras(data = data);
+    if(nrow(goose_multipar)==0) {
+      params <- get_goose_paras(data = data);
+    } else {
+      params <- get_goose_paras(data = data, init_params = goose_multipar[nrow(goose_multipar),]);
+    }
+  
+    goose_multipar <- rbind(goose_multipar, params$par)
+    assign("goose_multipar", goose_multipar, envir = globalenv() );
     Npred  <- goose_pred(para = params$par, data = data);
     yrs    <- year_start:(year_start + length(data$y) - 1);
     if(plot == TRUE){
@@ -474,28 +481,28 @@ gmse_goose <- function(data_file, manage_target, max_HB,
     assign("gmse_res", gmse_res, envir = globalenv() );
     # -- Simulate --------------------------------------------------------------
     while(years > 0){                                                # Count down number of years and for each add goose projections
-        gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
-                                     obs_mod = goose_gmse_obsmod,
-                                     man_mod = goose_gmse_manmod,
-                                     use_mod = goose_gmse_usrmod,
-                                     goose_data = goose_data,
-                                     manage_target = target, use_est = use_est,
-                                     max_HB = max_HB, obs_error = obs_error,
-                                     stakeholders = 1, get_res = "full");
-       if(as.numeric(gmse_res_new$basic[1]) == 1){
-           break;      
-       }
-       assign("gmse_res_new", gmse_res_new, envir = globalenv() );
-       gmse_res   <- gmse_res_new;
-       assign("gmse_res", gmse_res, envir = globalenv() );
-       goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
-                                    goose_data = goose_data);
-       assign("goose_data", goose_data, envir = globalenv() );
-       assign("target", manage_target, envir = globalenv() );
-       assign("max_HB", max_HB, envir = globalenv() );
-       assign("obs_error", obs_error, envir = globalenv() );
-       assign("use_est", use_est, envir = globalenv() );
-       years <- years - 1;
+      gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
+                                   obs_mod = goose_gmse_obsmod,
+                                   man_mod = goose_gmse_manmod,
+                                   use_mod = goose_gmse_usrmod,
+                                   goose_data = goose_data,
+                                   manage_target = target, use_est = use_est,
+                                   max_HB = max_HB, obs_error = obs_error,
+                                   stakeholders = 1, get_res = "full");
+      if(as.numeric(gmse_res_new$basic[1]) == 1){
+        break;      
+      }
+      assign("gmse_res_new", gmse_res_new, envir = globalenv() );
+      gmse_res   <- gmse_res_new;
+      assign("gmse_res", gmse_res, envir = globalenv() );
+      goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
+                                   goose_data = goose_data);
+      assign("goose_data", goose_data, envir = globalenv() );
+      assign("target", manage_target, envir = globalenv() );
+      assign("max_HB", max_HB, envir = globalenv() );
+      assign("obs_error", obs_error, envir = globalenv() );
+      assign("use_est", use_est, envir = globalenv() );
+      years <- years - 1;
     }
     goose_data <- goose_data[-(nrow(goose_data)),]        # Ignores the last "simulated" year as no numbers exist for it yet.
     if(plot == TRUE){
@@ -530,6 +537,13 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
                                  use_est = "normal"){
     
     goose_multidata <- NULL;
+    goose_multipar <- as.data.frame(NULL);
+    # goose_multipar <- t(as.data.frame(rep(NA,7)))
+    # row.names(goose_multipar) <- NULL
+    # goose_multipar <- goose_multipar[-1,]
+  
+    assign("goose_multipar", goose_multipar, envir = globalenv() );
+    
     for(i in 1:iterations){
         
         goose_multidata[[i]] <- gmse_goose(data_file = data_file,

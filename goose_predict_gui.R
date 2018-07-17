@@ -24,8 +24,22 @@ load_input <- function(in_name) {
 
 }
 
+sample_noNA <- function(x) {
+  
+  ### sample_noNA()
+  ###
+  ### Helper function which randomly samples 1 value from vector x, ignoring any missing values in x.
+  
+  avail <- x[!is.na(x)]
+  sample(avail, 1)
+}
 
 logit <- function(p){
+  
+  ### logit()
+  ###
+  ### Helper function providin logit transform
+  
     size <- length(p);
     resv <- rep(x = NA, length = size)
     for(i in 1:size){
@@ -228,11 +242,6 @@ goose_gmse_usrmod <- function(manager_vector, max_HB){
 #     return(goose_data);
 # }
 
-sample_noNA <- function(x) {
-    avail <- x[!is.na(x)]
-    sample(avail, 1)
-}
-
 goose_fill_missing <- function(goose_data){
 
     ### goose_fill_missing()
@@ -308,7 +317,7 @@ sim_goose_data <- function(gmse_results, goose_data){
     #  or Greenland (See HB below).
     new_r[3]  <- NA;                   
     
-    # ISLAYCULL: Number proposed culled on Islay in projected year.
+    # ISLAYCULL: Number proposed culled on Islay in projected year./
     new_r[4]  <- gmse_cul;             
     
     # GREENLANDCULL: Set to NA as we are not explicitly separating numbers culled on either Iceland 

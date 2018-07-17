@@ -6,9 +6,18 @@ library(readxl)
 
 load_input <- function(in_name) {
 
+  ### load_input()
+  ###
+  ### Takes single argument, which should be a character string to the input file path.
+  ### Loads input data using appropriate function depending on file type.
+  ### Returns a data frame of input file data.
+  
     if(is.null(in_name)) { 
-        stop('Please choose a base data file.') 
+      # Generates for Shiny app if user tries to runs simulations w/o input file.
+      stop('Please choose a base data file.') 
     } else {
+      # Identify input file name extension (type), and loads the file as a dataframe using 
+      #  the appropriate data loader:
         ext <- file_ext(in_name)
         if(ext=='csv' | ext=='.CSV') {
             return(read.csv(in_name))

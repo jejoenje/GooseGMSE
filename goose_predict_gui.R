@@ -188,36 +188,59 @@ goose_pred <- function(para, data){
       #  as the mean of the previous years' take there.
       N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB, na.rm=T);    
       
-      ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER culling on G'land and Iceland,
-      ###  but EXCLUDING anything 'to be' culled on Islay at [time].
-      ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating an NA in one or the other as a zero
-      ###  but keeps NA if both values are NA.
-      ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland becomes a 'running mean' 
-      ###  (i.e. changed as new data become available) and will be sampled from randomly for future projections.
+      ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
+      ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
+      ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating 
+      ###  an NA in one or the other as a zero but keeps NA if both values are NA.
+      ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland 
+      ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
+      ###  from randomly for future projections.
   }
   
   return(N_pred);
 }
 
 get_goose_paras <- function(data, init_params = NULL){
+    
+    ### get_goose_paras()
+    ###
+    ### Runs optimisation for population model parameters.
+    ### Takes goose_data and initial parameters as input (latter not required)
+    
+    # Set init parameters if not provided
     if( is.null(init_params) == TRUE ){
         init_params    <- c(0.1,6,0,0,0,0, 0);
     }
+    # Set control parameters for optim() function:
     contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
                            pgtol = 0);
+    # Run optimisation routine, using the goose_growth() function, goose_data and init_params
     get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
                             method = "BFGS", control = contr_paras, 
                             hessian = TRUE);
+    
+    # Updates progress bar when running as Shiny app
     if(exists("progress_i")) {
         progress_i <- progress_i+1
         assign("progress_i", progress_i, envir = globalenv())
         progress$set(value = progress_i)
     }
+    
+    # Return optimised parameters
     return(get_parameters);
 }
 
 goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
                             plot = TRUE){
+
+    ### goose_plot_pred()
+    ###
+    ### Called by goose_gmse_popmod, produces population prediction.
+    ### - Calls get_goose_paras() to obtain optimised parameter estimates
+    ### - Calls goose_pred() to obtain population prediction using optimised parameter estimates
+    ### - May produce a plot of predictions if requested (plot= argument)
+    ### - Returns vector of population predictions (Npred)  
+  
     params <- get_goose_paras(data = data);
     Npred  <- goose_pred(para = params$par, data = data);
     yrs    <- year_start:(year_start + length(data$y) - 1);
@@ -227,7 +250,7 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
              xlab="Year", ylab="Population size")         # Observed time series
         points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
         oend <- length(data$y);
-        points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19, 
+        points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
                col = "blue");
     }
     return(Npred);

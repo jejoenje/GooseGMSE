@@ -133,8 +133,7 @@ ui <- fluidPage(
                    for all years is available (i.e. all rows are complete).", br(),
                    tags$ul(
                        tags$li("Column 1 ('Year'): year in four-digit format."),
-                       tags$li("Column 2 ('Count'): the average over-winter count of geese on Islay (in the example data set this was based 
-                               on XXX counts over XXX months."),
+                       tags$li("Column 2 ('Count'): the average over-winter count of geese on Islay (e.g. October-March)"),
                        tags$li("Column 3 ('IcelandCull'): the number of geese culled on Iceland in the month prior to the current winter."),
                        tags$li("Column 4 ('IslayCull'): the number of geese culled on Islay over winter."),
                        tags$li("Column 5 ('GreenlandCull'): the number of geese culled on Greenland in the month prior to the current winter."),

@@ -4,3 +4,9 @@
 .Ruserdata
 GooseGMSE.Rproj
 mainPlot.png
+cull_summary.Rdata
+in_summary.Rdata
+output_summary.Rdata
+input.Rdata
+sims.Rdata
+zoomPlot.png

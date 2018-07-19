@@ -3,6 +3,19 @@
 library(GMSE)
 library(tools)
 library(readxl)
+library(foreach)
+library(doParallel)
+library(doMC)
+
+flattenlist <- function(x){  
+  morelists <- sapply(x, function(xprime) class(xprime)[1]=="list")
+  out <- c(x[!morelists], unlist(x[morelists], recursive=FALSE))
+  if(sum(morelists)){ 
+    Recall(out)
+  }else{
+    return(out)
+  }
+}
 
 load_input <- function(in_name) {
 
@@ -192,7 +205,7 @@ goose_pred <- function(para, data){
       ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
       ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating 
       ###  an NA in one or the other as a zero but keeps NA if both values are NA.
-      ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland 
+      ### By substracting mean(data$HB) here, the number removed due to cullingoose_gmse_popmodg in G'land and Iceland 
       ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
       ###  from randomly for future projections.
   }
@@ -538,27 +551,51 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
     
     goose_multidata <- NULL;
     goose_multipar <- as.data.frame(NULL);
-    # goose_multipar <- t(as.data.frame(rep(NA,7)))
-    # row.names(goose_multipar) <- NULL
-    # goose_multipar <- goose_multipar[-1,]
-  
     assign("goose_multipar", goose_multipar, envir = globalenv() );
     
-    for(i in 1:iterations){
-        
-        goose_multidata[[i]] <- gmse_goose(data_file = data_file,
-                                           obs_error = obs_error,
-                                           years = proj_yrs,
-                                           manage_target = manage_target, 
-                                           max_HB = max_HB, plot = FALSE,
-                                           use_est = use_est);
-        print(paste("Simulating ---------------------------------------> ",i));
+    registerDoMC(7) 
+    
+    # ptm <- proc.time()
+    goose_multidata <- foreach(i=1:iterations, .combine=list, .multicombine = T) %dopar% {
+      gmse_goose(data_file = data_file,
+                                         obs_error = obs_error,
+                                         years = proj_yrs,
+                                         manage_target = manage_target,
+                                         max_HB = max_HB, plot = FALSE,
+                                         use_est = use_est);
+      #print(paste("Simulating ---------------------------------------> ",i));
+     };
+    
+    if(length(goose_multidata)<iterations) {
+      goose_multidata <- flattenlist(goose_multidata)
     }
+    
+    #proc.time() - ptm
+    
+    # user  system elapsed 
+    # 0.524   0.572 201.932 
+    
+    # ptm <- proc.time()
+    # for(i in 1:iterations){
+    # 
+    #   goose_multidata[[i]] <- gmse_goose(data_file = data_file,
+    #                                      obs_error = obs_error,
+    #                                      years = proj_yrs,
+    #                                      manage_target = manage_target,
+    #                                      max_HB = max_HB, plot = FALSE,
+    #                                      use_est = use_est);
+    #   print(paste("Simulating ---------------------------------------> ",i));
+    # }
+    # proc.time() - ptm
+    
+    # user  system elapsed 
+    # 693.428   0.596 693.293 
+    
     goose_data <- goose_multidata[[1]];
     dat        <- goose_data[-1,];
     last_year  <- dat[dim(dat)[1], 1];
     yrs        <- dat[,1];
-    NN         <- dat[,10];
+    NN         <- dat[,10]; 
     HB         <- dat[,3];
     pry        <- (last_year - proj_yrs):last_year;
     obsrvd     <- 1:(dim(dat)[1] - proj_yrs - 1);
@@ -573,19 +610,22 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
     box();
     points(x = yrs[obsrvd], y = NN[obsrvd], cex = 1.25, pch = 20, type = "b");
     abline(h = manage_target, lwd = 0.8, lty = "dotted");
-    text(x = dat[5,1], y = 0, labels = "Observed", cex = 1.25);
-    text(x = pry[length(pry)], y = 0, labels = "Projected", cex = 1.25, pos = 2);
+    text(x = dat[5,1], y = 50000, labels = "Observed", cex = 1.75);
+    text(x = pry[length(pry)], y = 50000, labels = "Projected", cex = 1.75, pos = 2);
     for(i in 1:length(goose_multidata)){
-        goose_data <- goose_multidata[[i]];
-        dat <- goose_data[-1,];
-        yrs <- dat[,1];
-        NN  <- dat[,10];
-        HB  <- dat[,3];
-        pry <- (last_year):(yrs[length(yrs)]-2+20);
-        points(x = yrs, y = NN, pch = 20, type = "l", lwd = 0.6);
+      goose_data <- goose_multidata[[i]];
+      dat <- goose_data[-1,];
+      yrs <- dat[,1];
+      NN  <- dat[,10];
+      HB  <- dat[,3];
+      pry <- (last_year):(yrs[length(yrs)]-2+20);
+      points(x = yrs, y = NN, pch = 20, type = "l", lwd = 0.6);
     }
-    dev.copy(png,file="mainPlot.png", width=800, height=600)
+    dev.copy(png,file="mainPlot.png", width=800, height=800)
     dev.off()
+    
+    stopImplicitCluster()
+    
     return(goose_multidata);
 }
 
@@ -638,7 +678,7 @@ gmse_goose_summarise <- function(multidat, input) {
     proj_HB <- do.call(rbind, proj_HB)
     
     end_NN <- unlist(lapply(multidat, function(x) x$y[which.max(x$Year)]))
-    end_yr <- max(sims[[1]]$Year)
+    end_yr <- max(sims[[1]]$Year) 
     target_overlap <- input$target_in>apply(proj_y,2,min) & input$target_in<apply(proj_y,2,max)
     proj_y_mn <- apply(proj_y,2,mean)
     

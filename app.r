@@ -9,17 +9,17 @@ library(kableExtra)
 source('goose_predict_gui.R')
 
 # # ### for testing only:
-input <- list(input_name=data.frame(datapath=as.vector('~/Documents/docs/000_ConFooBio/gmse/data/example data UPDATED test.csv')),
-   sims_in=100, yrs_in=10, maxHB_in=2000, target_in=32000)
-input$input_name$datapath <- as.vector(input$input_name$datapath)
-iterations <- input$sims_in
-years <- input$yrs_in
-proj_yrs <- years
-manage_target <- input$target_in
-max_HB <- input$maxHB_in
-data_file <- as.vector(input$input_name$datapath)
-obs_error = 1438.614
-plot = TRUE
+# input <- list(input_name=data.frame(datapath=as.vector('~/Documents/docs/000_ConFooBio/gmse/data/example data UPDATED test.csv')),
+#    sims_in=100, yrs_in=10, maxHB_in=2000, target_in=32000)
+# input$input_name$datapath <- as.vector(input$input_name$datapath)
+# iterations <- input$sims_in
+# years <- input$yrs_in
+# proj_yrs <- years
+# manage_target <- input$target_in
+# max_HB <- input$maxHB_in
+# data_file <- as.vector(input$input_name$datapath)
+# obs_error = 1438.614
+# plot = TRUE
 
 progress_i <- 0
 assign("progress_i", progress_i, envir = globalenv())

@@ -224,6 +224,7 @@ get_goose_paras <- function(data, init_params = NULL){
     if( is.null(init_params) == TRUE ){
         init_params    <- c(0.1,6,0,0,0,0);                
     }
+  
     # Set control parameters for optim() function:
     contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
                            pgtol = 0);
@@ -254,14 +255,9 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
     ### - May produce a plot of predictions if requested (plot= argument)
     ### - Returns vector of population predictions (Npred)  
   
-    if(nrow(goose_multipar)==0) {
-      params <- get_goose_paras(data = data);
-    } else {
-      params <- get_goose_paras(data = data, init_params = goose_multipar[nrow(goose_multipar),]);
-    }
+
+    params <- get_goose_paras(data = data);
   
-    goose_multipar <- rbind(goose_multipar, params$par)
-    assign("goose_multipar", goose_multipar, envir = globalenv() );
     Npred  <- goose_pred(para = params$par, data = data);
     yrs    <- year_start:(year_start + length(data$y) - 1);
     if(plot == TRUE){
@@ -550,47 +546,18 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
                                  use_est = "normal"){
     
     goose_multidata <- NULL;
-    goose_multipar <- as.data.frame(NULL);
-    assign("goose_multipar", goose_multipar, envir = globalenv() );
-    
-    registerDoMC(7) 
-    
-    # ptm <- proc.time()
-    goose_multidata <- foreach(i=1:iterations, .combine=list, .multicombine = T) %dopar% {
-      gmse_goose(data_file = data_file,
+
+    for(i in 1:iterations){
+
+      goose_multidata[[i]] <- gmse_goose(data_file = data_file,
                                          obs_error = obs_error,
                                          years = proj_yrs,
                                          manage_target = manage_target,
                                          max_HB = max_HB, plot = FALSE,
                                          use_est = use_est);
-      #print(paste("Simulating ---------------------------------------> ",i));
-     };
-    
-    if(length(goose_multidata)<iterations) {
-      goose_multidata <- flattenlist(goose_multidata)
+      print(paste("Simulating ---------------------------------------> ",i));
     }
-    
-    #proc.time() - ptm
-    
-    # user  system elapsed 
-    # 0.524   0.572 201.932 
-    
-    # ptm <- proc.time()
-    # for(i in 1:iterations){
-    # 
-    #   goose_multidata[[i]] <- gmse_goose(data_file = data_file,
-    #                                      obs_error = obs_error,
-    #                                      years = proj_yrs,
-    #                                      manage_target = manage_target,
-    #                                      max_HB = max_HB, plot = FALSE,
-    #                                      use_est = use_est);
-    #   print(paste("Simulating ---------------------------------------> ",i));
-    # }
-    # proc.time() - ptm
-    
-    # user  system elapsed 
-    # 693.428   0.596 693.293 
-    
+
     goose_data <- goose_multidata[[1]];
     dat        <- goose_data[-1,];
     last_year  <- dat[dim(dat)[1], 1];

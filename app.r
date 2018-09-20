@@ -75,7 +75,7 @@ ui <- fluidPage(
                   value = 32000, step=1000),
       
       sliderInput("maxHB_in", "Max. cull per year:",
-                  min = 0, max = 10000, value = 2000, step = 1000),
+                  min = 0, max = 10000, value = 2000, step = 100),
     
       actionButton('run_in', 'Run simulations'),
       br(),

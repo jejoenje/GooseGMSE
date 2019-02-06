@@ -1,4 +1,6 @@
-rm(list=ls()) # Housekeeping for testing
+### FOR TESTING RUN FROM HERE
+
+# rm(list=ls()) # Housekeeping for testing
 library(shiny)
 library(DT)
 library(markdown)
@@ -20,6 +22,10 @@ source('goose_predict_gui.R')
 # data_file <- as.vector(input$input_name$datapath)
 # obs_error = 1438.614
 # plot = TRUE
+
+### 'input' and other paras set above can now be used to run 
+
+### FOR TESTING RUN UNTIL HERE
 
 progress_i <- 0
 assign("progress_i", progress_i, envir = globalenv())
@@ -50,7 +56,7 @@ cull_table_format <- htmltools::withTags(table(
 
 ui <- fluidPage(
   
-  titlePanel(
+  titlePanel( work work work
       "Goose-GMSE (v. 1.0)", windowTitle = "Goose-GMSE"
   ),
   

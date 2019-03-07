@@ -50,10 +50,27 @@ sample_noNA <- function(x) {
   
   ### sample_noNA()
   ###
-  ### Helper function which randomly samples 1 value from vector x, ignoring any missing values in x.
+  ### Helper function which randomly samples 1 value from vector x, 
+  ### ignoring any missing values in x.
   
   avail <- x[!is.na(x)]
   sample(avail, 1)
+}
+
+# This is in response to reviewer comments. It first fits a linear model to
+# detect any trend in a particular variable over years, then samples from the
+# residuals of the model. The returned value preserves any linear trend with
+# an error that is sampled from the error structure of the model.
+# Note: This handles NA values without any problems.
+sample_trended <- function(x){
+    yr  <- 1:length(x);
+    mod <- lm(x ~ yr);
+    b0  <- as.numeric(mod$coefficients[1]);
+    b1  <- as.numeric(mod$coefficients[2]);
+    er  <- as.numeric(mod$residuals);
+    sr  <- sample(x = er, size = 1);
+    val <- b0 + b1 * (length(x)+1) + sr;
+    return(val);
 }
 
 logit <- function(p){
@@ -368,7 +385,7 @@ goose_fill_missing <- function(goose_data){
     missing_env <- dimnames(missing_env)[[2]][which(missing_env)]
     
     # Where missing (NA), replace with randomly sampled number from previous data (ignoring any previous NA values):
-    goose_data[nrow(goose_data),missing_env] <- apply(goose_data[-nrow(goose_data),missing_env],2,function(x) sample_noNA(x))
+    goose_data[nrow(goose_data),missing_env] <- apply(goose_data[-nrow(goose_data),missing_env],2,function(x) sample_trended(x))
     
     return(goose_data);
 }
@@ -432,10 +449,10 @@ sim_goose_data <- function(gmse_results, goose_data){
     new_r[5]  <- NA;                  
     
     # Future AIG, IslayTemp, AugRain and AugTemp are sampled randomly from previous years' data:
-    new_r[6]  <- sample_noNA(goose_data[,6]);
-    new_r[7]  <- sample_noNA(goose_data[,7]);
-    new_r[8]  <- sample_noNA(goose_data[,8]);
-    new_r[9]  <- sample_noNA(goose_data[,9]);
+    new_r[6]  <- sample_trended(goose_data[,6]);
+    new_r[7]  <- sample_trended(goose_data[,7]);
+    new_r[8]  <- sample_trended(goose_data[,8]);
+    new_r[9]  <- sample_trended(goose_data[,9]);
     
     # y: In observed years this was count + no. culled on Islay, in projected years this is GMSE 
     #  projection MINUS numbers proposed culled on Islay (i.e. the number culled on Islay is assumed 
@@ -445,8 +462,8 @@ sim_goose_data <- function(gmse_results, goose_data){
     
     # Future AIG.sc and HB (total hunting bag on Iceland and Greenland) are sampled randomly from 
     #  previous years' data.
-    new_r[11] <- sample_noNA(goose_data[,11]);
-    new_r[12] <- sample_noNA(goose_data[,12]);
+    new_r[11] <- sample_trended(goose_data[,11]);
+    new_r[12] <- sample_trended(goose_data[,12]);
     
     # Add new projected data to existing data, and return:
     new_dat   <- rbind(goose_data, new_r);
@@ -489,7 +506,7 @@ gmse_goose <- function(data_file, manage_target, max_HB,
     assign("use_est", use_est, envir = globalenv() );
     assign("gmse_res", gmse_res, envir = globalenv() );
     # -- Simulate --------------------------------------------------------------
-    while(years > 0){                                                # Count down number of years and for each add goose projections
+    while(years > 0){    # Count down number of years and for each add goose projections
       gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
                                    obs_mod = goose_gmse_obsmod,
                                    man_mod = goose_gmse_manmod,
@@ -512,8 +529,8 @@ gmse_goose <- function(data_file, manage_target, max_HB,
       assign("obs_error", obs_error, envir = globalenv() );
       assign("use_est", use_est, envir = globalenv() );
       years <- years - 1;
-    }
-    goose_data <- goose_data[-(nrow(goose_data)),]        # Ignores the last "simulated" year as no numbers exist for it yet.
+    }   # Ignores the last "simulated" year as no numbers exist for it yet.
+    goose_data <- goose_data[-(nrow(goose_data)),];
     if(plot == TRUE){
         dat <- goose_data[-1,];
         yrs <- dat[,1];

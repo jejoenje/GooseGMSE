@@ -222,7 +222,7 @@ goose_pred <- function(para, data){
       ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
       ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating 
       ###  an NA in one or the other as a zero but keeps NA if both values are NA.
-      ### By substracting mean(data$HB) here, the number removed due to cullingoose_gmse_popmodg in G'land and Iceland 
+      ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland 
       ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
       ###  from randomly for future projections.
   }

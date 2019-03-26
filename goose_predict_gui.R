@@ -515,9 +515,14 @@ gmse_goose <- function(data_file, manage_target, max_HB,
                                    manage_target = target, use_est = use_est,
                                    max_HB = max_HB, obs_error = obs_error,
                                    stakeholders = 1, get_res = "full");
+      
+      ### I THINK THE FOLLOWING IS AN ISSUE RE. CATCHING POPULATION EXTINCTION:
+      ### NEEDS CHECKING
       if(as.numeric(gmse_res_new$basic[1]) == 1){
         break;      
       }
+      ###
+      
       assign("gmse_res_new", gmse_res_new, envir = globalenv() );
       gmse_res   <- gmse_res_new;
       assign("gmse_res", gmse_res, envir = globalenv() );

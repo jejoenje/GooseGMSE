@@ -224,7 +224,7 @@ goose_pred <- function(para, data){
       # Next years' population size is reproduction rate times the density term, adjusted by 
       #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
       #  as the mean of the previous years' take there.
-      N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB, na.rm=T);    
+      N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB/data$y, na.rm=T)    
       
       ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
       ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
@@ -250,16 +250,17 @@ get_goose_paras <- function(data, init_params = NULL){
         init_params    <- c(0.1,6,0,0,0,0);                
     }
   
-
     # Run optimisation routine, using the goose_growth() function, goose_data and init_params
     ## PREVIOUS:
     # Set control parameters for optim() function:
-    contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
-                         pgtol = 0);
+    # contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
+    #                      pgtol = 0);
     # get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
     #                         method = "BFGS", control = contr_paras, 
     #                         hessian = TRUE);
+    
     ## NEW ATTEMPT (LL)
+    ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
     get_parameters <- optim(par = init_params, fn = goose_growth2, data = data,
                             hessian = TRUE);
     

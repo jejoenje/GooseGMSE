@@ -3,7 +3,7 @@ rm(list=ls())
 source('goose_predict_gui.R')
 
 input <- list(input_name=data.frame(
-  datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/Islay_Stirling_2017.xls')),
+  datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/Islay_Stirling_2015.xls')),
   sims_in=5, yrs_in=1, maxHB_in=2000, target_in=32000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in
@@ -80,7 +80,17 @@ goose_multidata <- NULL
       year_start = 1987
       ylim = c(10000, 60000)
       
-      Npred  <- goose_pred(para = params$par, data = data)
+      Npred <- goose_pred(para = params$par, data = data)
+      Npred <- floor(Npred)
+      
+      par_samp <- mvrnorm(1000, params$par, solve(params$hessian))
+      
+      par_samp_pred <-  apply(par_samp, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
+      
+      Npred_mn <- floor(apply(par_samp_pred, 1, function(x) median(x, na.rm=T)))
+      Npred_lo <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
+      Npred_hi <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
+      
       yrs    <- year_start:(year_start + length(data$y) - 1)
       
       par(mar = c(5, 5, 1, 1));
@@ -91,6 +101,9 @@ goose_multidata <- NULL
       points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
              col = "blue")
 
+      
+      
+      
       # RETURN goose_plot_pred()
       N_pred <- Npred
     # goose_gmse_popmod()

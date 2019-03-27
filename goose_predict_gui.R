@@ -173,6 +173,14 @@ goose_growth <- function(para, data){
     return(SS_tot);
 }
 
+### This is a start at an alternative for goose_growth(),
+###  this one maximising (Poisson) likelihood instead.
+goose_growth2 <- function(para, data) {
+  data_rows <- dim(data)[1];
+  N_pred <- goose_pred(para = para, data = data);
+  return(-sum(dpois(data$y, N_pred, log=T),na.rm=T))
+}
+
 goose_pred <- function(para, data){
   
   ### goose_pred()

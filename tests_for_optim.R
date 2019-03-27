@@ -80,3 +80,46 @@ round(coef(summary(params_maxLik))[,1:2],3)
 ### A couple of notes
 ### - I'm not sure of the log-lik optimisations used above yet. Any thoughts let me know.
 ### - I don't really understand how the scaling factor of 1000 affects the SE's to be entirely honest
+
+
+### To visualise the effects on predictions, just plot predictions and observed numbers
+### for past data:
+
+Npred <- goose_pred(para = params$par, data = data)
+Npred <- floor(Npred)
+
+year_start = 1987
+ylim = c(10000, 60000)
+
+par(mar = c(5, 5, 1, 1));
+plot(x =  yrs, y = data$y, pch = 1, ylim = ylim, cex.lab = 1.5,
+     xlab="Year", ylab="Population size")         # Observed time series
+points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
+oend <- length(data$y)
+points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
+       col = "blue")
+
+par_samp <- mvrnorm(1000, mu=coef(summary(params_mle))[,1], Sigma=solve(attr(params_mle,'details')$hessian))
+
+par_samp_pred <-  apply(par_samp, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
+
+Npred_mn <- floor(apply(par_samp_pred, 1, function(x) median(x, na.rm=T)))
+Npred_lo <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
+Npred_hi <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
+
+yrs <- year_start:(year_start + length(data$y) - 1)
+
+lines(yrs, Npred)
+lines(yrs, Npred_lo, col='darkgrey')
+lines(yrs, Npred_hi, col='darkgrey')
+
+
+### This is attempting to produce the same prediction range as above but clearly off the scale of the graph!
+
+par_samp1 <- mvrnorm(1000, mu=params$par, Sigma=-solve(params$hessian))
+par_samp_pred1 <-  apply(par_samp1, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
+Npred_mn1 <- floor(apply(par_samp_pred1, 1, function(x) median(x, na.rm=T)))
+Npred_lo1 <- floor(apply(par_samp_pred1, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
+Npred_hi1 <- floor(apply(par_samp_pred1, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
+lines(yrs, Npred_lo1, col='red', lty='dashed')
+lines(yrs, Npred_hi1, col='red', lty='dashed')

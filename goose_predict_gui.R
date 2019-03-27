@@ -250,12 +250,17 @@ get_goose_paras <- function(data, init_params = NULL){
         init_params    <- c(0.1,6,0,0,0,0);                
     }
   
+
+    # Run optimisation routine, using the goose_growth() function, goose_data and init_params
+    ## PREVIOUS:
     # Set control parameters for optim() function:
     contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
-                           pgtol = 0);
-    # Run optimisation routine, using the goose_growth() function, goose_data and init_params
-    get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
-                            method = "BFGS", control = contr_paras, 
+                         pgtol = 0);
+    # get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
+    #                         method = "BFGS", control = contr_paras, 
+    #                         hessian = TRUE);
+    ## NEW ATTEMPT (LL)
+    get_parameters <- optim(par = init_params, fn = goose_growth2, data = data,
                             hessian = TRUE);
     
     # Updates progress bar when running as Shiny app
@@ -314,6 +319,7 @@ goose_gmse_popmod <- function(goose_data){
     ### - Returns a single new population projection for a following year.
   
     N_pred <- goose_plot_pred(data = goose_data, plot = FALSE);
+    N_pred <- floor(N_pred)
     N_last <- length(N_pred);
     New_N  <- as.numeric(N_pred[N_last]);
 
@@ -513,6 +519,7 @@ gmse_goose <- function(data_file, manage_target, max_HB,
     assign("obs_error", obs_error, envir = globalenv() );
     assign("use_est", use_est, envir = globalenv() );
     assign("gmse_res", gmse_res, envir = globalenv() );
+
     # -- Simulate --------------------------------------------------------------
     while(years > 0){    # Count down number of years and for each add goose projections
       gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 

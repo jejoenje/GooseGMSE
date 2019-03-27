@@ -181,8 +181,21 @@ goose_growth2 <- function(para, data) {
   return(-sum(dpois(data$y, N_pred, log=T),na.rm=T))
 }
 
-goose_pred <- function(para, data){
-  
+goose_growth2a <- function(para, data) {
+  data_rows <- dim(data)[1];
+  N_pred <- goose_pred(para = para, data = data);
+  return(sum(dpois(data$y, N_pred, log=T),na.rm=T))
+}
+
+## RETURNS NEGATIVE LOG LIKELIHOOD  - for mle2()
+goose_growth3 <- function(b1, b2, b3, b4, b5, b6) {
+  data_rows <- dim(data)[1];
+  N_pred <- goose_pred2(b1, b2, b3, b4, b5, b6, data = data);
+  return(-sum(dpois(data$y, N_pred, log=T),na.rm=T))
+}
+
+## Different parameterisation of goose_pred() to allow use of mle():
+goose_pred2 <- function(b1, b2, b3, b4, b5, b6, data){  
   ### goose_pred()
   ### 
   ### MAIN POPULATION MODEL PREDICTION FUNCTION
@@ -192,13 +205,14 @@ goose_pred <- function(para, data){
   ###  - Produce a prediction for each line in the data, given environmental variables.
   ###  - Returns vector of predictions.
   
-  r_val        <- para[1];              # Maximum growth rate
-  K_val        <- para[2];              # Carrying capacity
-  G_rain_coeff <- para[3];              # Effect of precipitation on Greenland in August
-  G_temp_coeff <- para[4];              # Effect of temperature on Greenland in August
-  I_temp_coeff <- para[5];              # Effect of temperature on Islay the previous winter
-  AIG_2_yrs    <- para[6];              # Effect of area of improved grassland 2 years prior
-
+  r_val        <- b1              # Maximum growth rate
+  K_val        <- b2              # Carrying capacity
+  G_rain_coeff <- b3              # Effect of precipitation on Greenland in August
+  G_temp_coeff <- b4              # Effect of temperature on Greenland in August
+  I_temp_coeff <- b5              # Effect of temperature on Islay the previous winter
+  AIG_2_yrs    <- b6              # Effect of area of improved grassland 2 years prior
+  
+  
   # Make as many predictions as there are lines in data:
   data_rows <- dim(data)[1];
   N_pred    <- rep(x = NA, times = data_rows);
@@ -233,6 +247,62 @@ goose_pred <- function(para, data){
       ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland 
       ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
       ###  from randomly for future projections.
+  }
+  
+  return(N_pred);
+}
+
+goose_pred <- function(para, data){
+  ### goose_pred()
+  ### 
+  ### MAIN POPULATION MODEL PREDICTION FUNCTION
+  ###
+  ### Takes optimised parameters and data as input
+  ###  - Extract input parameters from para vector.
+  ###  - Produce a prediction for each line in the data, given environmental variables.
+  ###  - Returns vector of predictions.
+  
+  r_val        <- para[1];              # Maximum growth rate
+  K_val        <- para[2];              # Carrying capacity
+  G_rain_coeff <- para[3];              # Effect of precipitation on Greenland in August
+  G_temp_coeff <- para[4];              # Effect of temperature on Greenland in August
+  I_temp_coeff <- para[5];              # Effect of temperature on Islay the previous winter
+  AIG_2_yrs    <- para[6];              # Effect of area of improved grassland 2 years prior
+  
+  # Make as many predictions as there are lines in data:
+  data_rows <- dim(data)[1];
+  N_pred    <- rep(x = NA, times = data_rows);
+  
+  # Starting at year 3 (we need data from at least 2 years ago), run through each input line.
+  for(time in 3:data_rows){
+    # Reproduction rate is max growth rate times previous years' population size
+    goose_repr   <- r_val * data$y[time - 1];
+    # Goose density/carrying capacity term is function of numbers in previous year, K and AIG
+    goose_dens   <- 1 - (data$y[time -1] / (K_val * data$AIG[time - 1]));
+    # 'Current' population (previous year)
+    goose_now    <- data$y[time - 1];
+    # Effect of rainfall in Greenland in previous year
+    G_rain_adj   <- G_rain_coeff * data$AugRain[time - 1];
+    # Effect of temperature of Greenland in previous year
+    G_temp_adj   <- G_temp_coeff * data$AugTemp[time - 1];
+    # Effect of temperature on Islay in previous year
+    I_temp_adj   <- I_temp_coeff * data$IslayTemp[time - 1];
+    # Effect of AIG on Islay in the year before last
+    AIG_2_adj    <- AIG_2_yrs    * data$AIG.sc[time - 2];
+    # Sum the combined effect of above effects for convenience
+    adjusted     <- G_rain_adj + G_temp_adj + I_temp_adj + AIG_2_adj
+    # Next years' population size is reproduction rate times the density term, adjusted by 
+    #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
+    #  as the mean of the previous years' take there.
+    N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB/data$y, na.rm=T)    
+    
+    ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
+    ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
+    ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating 
+    ###  an NA in one or the other as a zero but keeps NA if both values are NA.
+    ### By substracting mean(data$HB) here, the number removed due to culling in G'land and Iceland 
+    ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
+    ###  from randomly for future projections.
   }
   
   return(N_pred);

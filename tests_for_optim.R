@@ -123,3 +123,19 @@ Npred_lo1 <- floor(apply(par_samp_pred1, 1, function(x) quantile(x, prob=0.025, 
 Npred_hi1 <- floor(apply(par_samp_pred1, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
 lines(yrs, Npred_lo1, col='red', lty='dashed')
 lines(yrs, Npred_hi1, col='red', lty='dashed')
+
+
+### Copy pars and SE's from Tab 3 in report
+
+t3pars <- c(0.273, 5.595, -0.006, 0.076, 0.007, 0.062)
+t3se <- c(0.051, 0.876, 0.001, 0.019, 0.001, 0.010)
+t3 <- data.frame(b=t3pars, se=t3se)
+par_samp3 <- apply(t3, 1, function(x) rnorm(10000, x[1], x[2]) )
+#par_samp_pred3 <-  apply(par_samp3, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
+par_samp_pred3 <-  apply(par_samp3, 1, function(x) goose_pred(para=x, data=data))
+Npred_mn3 <- floor(apply(par_samp_pred3, 1, function(x) median(x, na.rm=T)))
+Npred_lo3 <- floor(apply(par_samp_pred3, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
+Npred_hi3 <- floor(apply(par_samp_pred3, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
+lines(yrs, Npred)
+lines(yrs, Npred_lo3, col='red')
+lines(yrs, Npred_hi3, col='red')

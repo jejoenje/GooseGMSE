@@ -521,7 +521,7 @@ gmse_goose <- function(data_file, manage_target, max_HB,
     assign("gmse_res", gmse_res, envir = globalenv() );
 
     # -- Simulate --------------------------------------------------------------
-    while(years > 0){    # Count down number of years and for each add goose projections
+    while(years > 1){    # Count down number of years and for each add goose projections
       gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
                                    obs_mod = goose_gmse_obsmod,
                                    man_mod = goose_gmse_manmod,
@@ -550,7 +550,8 @@ gmse_goose <- function(data_file, manage_target, max_HB,
       assign("use_est", use_est, envir = globalenv() );
       years <- years - 1;
     }   # Ignores the last "simulated" year as no numbers exist for it yet.
-    goose_data <- goose_data[-(nrow(goose_data)),];
+    
+    #goose_data <- goose_data[-(nrow(goose_data)),];
     if(plot == TRUE){
         dat <- goose_data[-1,];
         yrs <- dat[,1];

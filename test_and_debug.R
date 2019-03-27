@@ -113,17 +113,32 @@ goose_multidata <- NULL
   goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                goose_data = goose_data);
   
-  gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
-                               obs_mod = goose_gmse_obsmod,
-                               man_mod = goose_gmse_manmod,
-                               use_mod = goose_gmse_usrmod,
-                               goose_data = goose_data,
-                               manage_target = manage_target, use_est = use_est,
-                               max_HB = max_HB, obs_error = obs_error,
-                               stakeholders = 1, get_res = "full");
-  
+  # -- Simulate --------------------------------------------------------------
+  # while(years > 0){    # Count down number of years and for each add goose projections
+    gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
+                                 obs_mod = goose_gmse_obsmod,
+                                 man_mod = goose_gmse_manmod,
+                                 use_mod = goose_gmse_usrmod,
+                                 goose_data = goose_data,
+                                 manage_target = manage_target, use_est = use_est,
+                                 max_HB = max_HB, obs_error = obs_error,
+                                 stakeholders = 1, get_res = "full");
+    
+    ### I THINK THE FOLLOWING IS AN ISSUE RE. CATCHING POPULATION EXTINCTION:
+    ### NEEDS CHECKING
+    if(as.numeric(gmse_res_new$basic[1]) == 1){
+      break;      
+    }
+    ###
+    
+    gmse_res   <- gmse_res_new;
 
+    goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
+                                 goose_data = goose_data);
+    years <- years - 1;
+  }   # Ignores the last "simulated" year as no numbers exist for it yet.
   
+  goose_data <- goose_data[-(nrow(goose_data)),];
   
 mvrnorm(1000, params$par, solve(params$hessian))
   

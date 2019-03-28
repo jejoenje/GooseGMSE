@@ -3,7 +3,7 @@ rm(list=ls())
 require('stats4')
 require('bbmle')
 require('maxLik')
-
+require('MASS')
 source('goose_predict_gui.R')
 
 # To ensure functions from goose_predict_gui.R work as in the Shiny app:
@@ -89,6 +89,8 @@ Npred <- goose_pred(para = params$par, data = data)
 Npred <- floor(Npred)
 
 year_start = 1987
+yrs <- year_start:(year_start + length(data$y) - 1)
+
 ylim = c(10000, 60000)
 
 par(mar = c(5, 5, 1, 1));
@@ -107,11 +109,9 @@ Npred_mn <- floor(apply(par_samp_pred, 1, function(x) median(x, na.rm=T)))
 Npred_lo <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
 Npred_hi <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
 
-yrs <- year_start:(year_start + length(data$y) - 1)
-
 lines(yrs, Npred)
-lines(yrs, Npred_lo, col='darkgrey')
-lines(yrs, Npred_hi, col='darkgrey')
+lines(yrs, Npred_lo, col='red')
+lines(yrs, Npred_hi, col='red')
 
 
 ### This is attempting to produce the same prediction range as above but clearly off the scale of the graph!
@@ -126,7 +126,13 @@ lines(yrs, Npred_hi1, col='red', lty='dashed')
 
 
 ### Copy pars and SE's from Tab 3 in report
-
+par(mar = c(5, 5, 1, 1));
+plot(x =  yrs, y = data$y, pch = 1, ylim = ylim, cex.lab = 1.5,
+     xlab="Year", ylab="Population size")         # Observed time series
+points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
+oend <- length(data$y)
+points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
+       col = "blue")
 t3pars <- c(0.273, 5.595, -0.006, 0.076, 0.007, 0.062)
 t3se <- c(0.051, 0.876, 0.001, 0.019, 0.001, 0.010)
 t3 <- data.frame(b=t3pars, se=t3se)
@@ -139,3 +145,4 @@ Npred_hi3 <- floor(apply(par_samp_pred3, 1, function(x) quantile(x, prob=0.975, 
 lines(yrs, Npred)
 lines(yrs, Npred_lo3, col='red')
 lines(yrs, Npred_hi3, col='red')
+

@@ -60,15 +60,11 @@ goose_multidata <- NULL
           #if( is.null(init_params) == TRUE ){
           init_params    <- c(0.1,6,0,0,0,0)               
           
-
-          contr_paras    <- list(trace = 1, fnscale = -1, maxit = 1000, factr = 1e-8,
-                                 pgtol = 0)
-          
-          get_parameters <- optim(par = init_params, fn = goose_growth2, data = data,
+          get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
                                   hessian = TRUE)
           
           ### I THINK THIS GIVES THE SE'S:
-          ses <- sqrt(abs(diag(-solve(get_parameters$hessian))))
+          ses <- SEfromHessian(get_parameters$hessian)
           
           ### This is potentially interesting:
           # https://www.rdocumentation.org/packages/HelpersMG/versions/3.5/topics/SEfromHessian
@@ -83,26 +79,28 @@ goose_multidata <- NULL
       Npred <- goose_pred(para = params$par, data = data)
       Npred <- floor(Npred)
       
-      par_samp <- mvrnorm(1000, params$par, solve(params$hessian))
-      
-      par_samp_pred <-  apply(par_samp, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
-      
-      Npred_mn <- floor(apply(par_samp_pred, 1, function(x) median(x, na.rm=T)))
-      Npred_lo <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
-      Npred_hi <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
-      
-      yrs    <- year_start:(year_start + length(data$y) - 1)
-      
-      par(mar = c(5, 5, 1, 1));
-      plot(x =  yrs, y = data$y, pch = 1, ylim = ylim, cex.lab = 1.5,
-           xlab="Year", ylab="Population size")         # Observed time series
-      points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
-      oend <- length(data$y)
-      points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
-             col = "blue")
-
-      
-      
+      # par_samp <- mvrnorm(1000, params$par, solve(params$hessian))
+      # 
+      # par_samp_pred <-  apply(par_samp, 1, function(x) rpois(nrow(data), goose_pred(para=x, data=data)))
+      # 
+      # Npred_mn <- floor(apply(par_samp_pred, 1, function(x) median(x, na.rm=T)))
+      # Npred_lo <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.025, na.rm=T)))
+      # Npred_hi <- floor(apply(par_samp_pred, 1, function(x) quantile(x, prob=0.975, na.rm=T)))
+      # 
+      # yrs    <- year_start:(year_start + length(data$y) - 1)
+      # 
+      # par(mar = c(5, 5, 1, 1));
+      # plot(x =  yrs, y = data$y, pch = 1, ylim = ylim, cex.lab = 1.5,
+      #      xlab="Year", ylab="Population size")         # Observed time series
+      # points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
+      # oend <- length(data$y)
+      # points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
+      #        col = "blue")
+      # 
+      # lines(yrs, Npred_mn)
+      # lines(yrs, Npred_lo)
+      # lines(yrs, Npred_hi)
+      # 
       
       # RETURN goose_plot_pred()
       N_pred <- Npred
@@ -146,7 +144,7 @@ goose_multidata <- NULL
     
     gmse_res   <- gmse_res_new;
 
-    goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
+    1(gmse_results = gmse_res$basic, 
                                  goose_data = goose_data);
     years <- years - 1;
   }   # Ignores the last "simulated" year as no numbers exist for it yet.

@@ -264,6 +264,8 @@ get_goose_paras <- function(dat, init_params = NULL){
     
     ## NEW ATTEMPT (LL)
     ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
+    dat$y <- floor(dat$y)
+    #dat$y[dat$y<0] <- 0
     get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat,
                             hessian = TRUE);
     

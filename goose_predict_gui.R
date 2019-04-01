@@ -582,103 +582,111 @@ ER <- function(paras,ses) {
 }
 
 
-gmse_goose <- function(data_file, manage_target, max_HB, 
+gmse_goose <- function(data_file, manage_target=manage_target, max_HB, 
                        obs_error = 1438.614, years, use_est = "normal",
                        plot = TRUE){
+  
     # -- Initialise ------------------------------------------------------------
-    proj_yrs   <- years;
-    goose_data <- goose_clean_data(file = data_file);
-    last_year  <- goose_data[dim(goose_data)[1], 1];
-    use_est    <- 0;
+    proj_yrs   <- years
+    goose_data <- goose_clean_data(file = data_file)
+    last_year  <- goose_data[dim(goose_data)[1], 1]
+    use_est    <- 0
     if(use_est == "cautious"){
-        use_est <- -1;
+        use_est <- -1
     }
     if(use_est == "aggressive"){
-        use_est <- 1;
+        use_est <- 1
     }
-    assign("goose_data", goose_data, envir = globalenv() );
-    assign("target", manage_target, envir = globalenv() );
-    assign("max_HB", max_HB, envir = globalenv() );
-    assign("obs_error", obs_error, envir = globalenv() );
-    assign("use_est", use_est, envir = globalenv() );
+    #assign("goose_data", goose_data, envir = globalenv() )
+    #assign("target", manage_target, envir = globalenv() )
+    #assign("max_HB", max_HB, envir = globalenv() )
+    #assign("obs_error", obs_error, envir = globalenv() )
+    #assign("use_est", use_est, envir = globalenv() )
+    
+    goose_data$Npred_mn <- NA
+    goose_data$Npred_lo <- NA
+    goose_data$Npred_hi <- NA
+    
     gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod, 
                              obs_mod = goose_gmse_obsmod,
                              man_mod = goose_gmse_manmod,
                              use_mod = goose_gmse_usrmod,
-                             goose_data = goose_data, obs_error = obs_error,
-                             manage_target = target, max_HB = max_HB,
+                             dat = goose_data, obs_error = obs_error,
+                             manage_target = manage_target, max_HB = max_HB,
                              use_est = use_est, stakeholders = 1, 
                              get_res = "full");
     
     goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                  goose_data = goose_data);
+    goose_data$Npred_mn[nrow(goose_data)] <- Npred_mn-gmse_res$basic$user_results
+    goose_data$Npred_lo[nrow(goose_data)] <- Npred_lo-gmse_res$basic$user_results
+    goose_data$Npred_hi[nrow(goose_data)] <- Npred_hi-gmse_res$basic$user_results
     
-    ### NOW GENERATE "ERROR" BY SAMPLING FROM PARAMETER DISTRIBUTIONS FOR T+1
     
-    assign("goose_data", goose_data, envir = globalenv() );
-    assign("target", manage_target, envir = globalenv() );
-    assign("max_HB", max_HB, envir = globalenv() );
-    assign("obs_error", obs_error, envir = globalenv() );
-    assign("use_est", use_est, envir = globalenv() );
-    assign("gmse_res", gmse_res, envir = globalenv() );
-    
-    # -- Simulate --------------------------------------------------------------
-    while(years > 1){    # Count down number of years and for each add goose projections
-      gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
-                                   obs_mod = goose_gmse_obsmod,
-                                   man_mod = goose_gmse_manmod,
-                                   use_mod = goose_gmse_usrmod,
-                                   goose_data = goose_data,
-                                   manage_target = target, use_est = use_est,
-                                   max_HB = max_HB, obs_error = obs_error,
-                                   stakeholders = 1, get_res = "full");
+    # Start 'while' loop
+    while(years > 1){
       
-      ### I THINK THE FOLLOWING IS AN ISSUE RE. CATCHING POPULATION EXTINCTION:
-      ### NEEDS CHECKING
-      if(as.numeric(gmse_res_new$basic[1]) == 1){
-        break;      
+      if(goose_data$y[nrow(goose_data)]<1) {
+        extinct <- TRUE
+        goose_data$y[nrow(goose_data)] <- 0
+        goose_data$Count[nrow(goose_data)] <- 0
+        goose_data$Npred_mn[nrow(goose_data)] <- 0
+        goose_data$Npred_lo[nrow(goose_data)] <- 0
+        goose_data$Npred_hi[nrow(goose_data)] <- 0
       }
-      ###
       
-        assign("gmse_res_new", gmse_res_new, envir = globalenv() );
-      gmse_res   <- gmse_res_new;
-        assign("gmse_res", gmse_res, envir = globalenv() );
-      goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
-                                   goose_data = goose_data);
+      if(extinct==FALSE) {
+        
+        goose_data$y[goose_data$y<0] <- 0
+        goose_data$Npred_mn[goose_data$Npred_mn<0] <- 0
+        #goose_data$Npred_lo[goose_data$Npred_lo<0] <- 0
+        #goose_data$Npred_hi[goose_data$Npred_hi<0] <- 0
+        
+        gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod, 
+                                     obs_mod = goose_gmse_obsmod,
+                                     man_mod = goose_gmse_manmod,
+                                     use_mod = goose_gmse_usrmod,
+                                     dat = goose_data,
+                                     manage_target = manage_target, use_est = use_est,
+                                     max_HB = max_HB, obs_error = obs_error,
+                                     stakeholders = 1, get_res = "full");
+        
+        gmse_res   <- gmse_res_new;
+        
+        goose_data <- sim_goose_data(gmse_results = gmse_res$basic, 
+                                     goose_data = goose_data);
+        
+        goose_data$Npred_mn[nrow(goose_data)] <- Npred_mn-gmse_res$basic$user_results
+        goose_data$Npred_lo[nrow(goose_data)] <- Npred_lo-gmse_res$basic$user_results
+        goose_data$Npred_hi[nrow(goose_data)] <- Npred_hi-gmse_res$basic$user_results
+      } else {
+        cur_yr <- goose_data$Year[length(goose_data$Year)]
+        rem_yrs <- (last_year+proj_yrs)-cur_yr
+        
+        adds <- data.frame(Year=(cur_yr+1):(cur_yr+rem_yrs),
+                           Count=0,
+                           IcelandCull=NA,
+                           IslayCull=NA,
+                           GreenlandCull=NA,
+                           AIG=NA,
+                           IslayTemp=NA,
+                           AugRain=NA,
+                           AugTemp=NA,
+                           y=0,
+                           AIG.sc=NA,
+                           HB=NA,
+                           Npred_mn=0,
+                           Npred_lo=NA,
+                           Npred_hi=NA
+        )
+        goose_data <- rbind(goose_data, adds)
+        years <- 1
+      }
       
-      ### NOW GENERATE "ERROR" BY SAMPLING FROM PARAMETER DISTRIBUTIONS FOR T+t
-      
-        assign("goose_data", goose_data, envir = globalenv() );
-        assign("target", manage_target, envir = globalenv() );
-        assign("max_HB", max_HB, envir = globalenv() );
-        assign("obs_error", obs_error, envir = globalenv() );
-        assign("use_est", use_est, envir = globalenv() );
       years <- years - 1;
-    }   # Ignores the last "simulated" year as no numbers exist for it yet.
-    
-    #goose_data <- goose_data[-(nrow(goose_data)),];
-    if(plot == TRUE){
-        dat <- goose_data[-1,];
-        yrs <- dat[,1];
-        NN  <- dat[,10];
-        HB  <- dat[,3];
-        pry <- (last_year):(yrs[length(yrs)]-2+20);
-        par(mar = c(5, 5, 1, 1));
-        plot(x = yrs, y = NN, xlab = "Year", ylab = "Population size",
-             cex = 1.25, pch = 20, type = "b", ylim = c(0, max(NN)), 
-             cex.lab = 1.5, cex.axis = 1.5, lwd = 2);
-        polygon(x = c(pry, rev(pry)), 
-                y = c(rep(x = -10000, times = proj_yrs + 20), 
-                      rep(x = 2*max(NN), times = proj_yrs + 20)),   
-                col = "grey", border = NA);
-        box();
-        points(x = yrs, y = NN, cex = 1.25, pch = 20, type = "b");
-        points(x = yrs, y = HB, type = "b", cex = 1.25, col = "red", 
-               pch = 20, lwd = 2);
-        abline(h = manage_target, lwd = 0.8, lty = "dotted");
-        text(x = dat[5,1], y = max(NN), labels = "Observed", cex = 2.5);
-        text(x = pry[5] + 1, y = max(NN), labels = "Projected", cex = 2.5);
     }
+    
+    
     return(goose_data);
 }
 
@@ -733,8 +741,6 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
     }
     dev.copy(png,file="mainPlot.png", width=800, height=800)
     dev.off()
-    
-    stopImplicitCluster()
     
     return(goose_multidata);
 }

@@ -4,7 +4,7 @@ source('goose_predict_gui.R')
 
 input <- list(input_name=data.frame(
   datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/Islay_Stirling_2015.xls')),
-  sims_in=5, yrs_in=15, maxHB_in=8000, target_in=500)
+  sims_in=5, yrs_in=5, maxHB_in=4000, target_in=10000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in
 years <- input$yrs_in
@@ -16,9 +16,7 @@ obs_error = 1438.614
 plot = TRUE
 
 obs_error = 1438.614
-lastpars <- NULL
-Npred_lo <- NULL
-Npred_hi <- NULL
+
 extinct <- FALSE
 
 proj_yrs   <- years
@@ -34,10 +32,6 @@ if(use_est == "aggressive"){
 }
 
 target <- manage_target
-
-Npred_lo <- NULL
-Npred_hi <- NULL
-Npred_mn <- NULL
 
 goose_data$Npred_mn <- NA
 goose_data$Npred_lo <- NA
@@ -128,5 +122,6 @@ while(years > 1){
 plot(goose_data$Year, goose_data$y, lwd=2, ylim=c(0,60000), type='l')
 lines(goose_data$Year, goose_data$Npred_lo, col='red')
 lines(goose_data$Year, goose_data$Npred_hi, col='red')
+
 
 

@@ -176,15 +176,15 @@ goose_clean_data <- function(file){
 
 ### This is a start at an alternative for goose_growth(),
 ###  this one maximising (Poisson) likelihood instead.
-goose_growth <- function(para, data) {
-  data_rows <- dim(data)[1];
-  N_pred <- goose_pred(para = para, data = data);
-  return(-sum(dpois(data$y, N_pred, log=T),na.rm=T))
+goose_growth <- function(para, dat) {
+  data_rows <- dim(dat)[1];
+  N_pred <- goose_pred(para = para, dat = dat);
+  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))
 }
 
 
 ## Different parameterisation of goose_pred() to allow use of mle():
-goose_pred <- function(para, data){  
+goose_pred <- function(para, dat){  
   ### goose_pred()
   ### 
   ### MAIN POPULATION MODEL PREDICTION FUNCTION
@@ -203,31 +203,31 @@ goose_pred <- function(para, data){
   
   
   # Make as many predictions as there are lines in data:
-  data_rows <- nrow(data)
+  data_rows <- length(dat[,1])
   N_pred    <- rep(NA, data_rows)
   
   # Starting at year 3 (we need data from at least 2 years ago), run through each input line.
   for(time in 3:data_rows){
       # Reproduction rate is max growth rate times previous years' population size
-      goose_repr   <- r_val * data$y[time - 1];
+      goose_repr   <- r_val * dat$y[time - 1];
       # Goose density/carrying capacity term is function of numbers in previous year, K and AIG
-      goose_dens   <- 1 - (data$y[time -1] / (K_val * data$AIG[time - 1]));
+      goose_dens   <- 1 - (dat$y[time -1] / (K_val * dat$AIG[time - 1]));
       # 'Current' population (previous year)
-      goose_now    <- data$y[time - 1];
+      goose_now    <- dat$y[time - 1];
       # Effect of rainfall in Greenland in previous year
-      G_rain_adj   <- G_rain_coeff * data$AugRain[time - 1];
+      G_rain_adj   <- G_rain_coeff * dat$AugRain[time - 1];
       # Effect of temperature of Greenland in previous year
-      G_temp_adj   <- G_temp_coeff * data$AugTemp[time - 1];
+      G_temp_adj   <- G_temp_coeff * dat$AugTemp[time - 1];
       # Effect of temperature on Islay in previous year
-      I_temp_adj   <- I_temp_coeff * data$IslayTemp[time - 1];
+      I_temp_adj   <- I_temp_coeff * dat$IslayTemp[time - 1];
       # Effect of AIG on Islay in the year before last
-      AIG_2_adj    <- AIG_2_yrs    * data$AIG.sc[time - 2];
+      AIG_2_adj    <- AIG_2_yrs    * dat$AIG.sc[time - 2];
       # Sum the combined effect of above effects for convenience
       adjusted     <- G_rain_adj + G_temp_adj + I_temp_adj + AIG_2_adj
       # Next years' population size is reproduction rate times the density term, adjusted by 
       #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
       #  as the mean of the previous years' take there.
-      N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(data$HB/data$y, na.rm=T)    
+      N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(dat$HB/dat$y, na.rm=T)    
       
       ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
       ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
@@ -241,7 +241,7 @@ goose_pred <- function(para, data){
   return(N_pred);
 }
 
-get_goose_paras <- function(data, init_params = NULL){
+get_goose_paras <- function(dat, init_params = NULL){
     
     ### get_goose_paras()
     ###
@@ -264,7 +264,7 @@ get_goose_paras <- function(data, init_params = NULL){
     
     ## NEW ATTEMPT (LL)
     ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
-    get_parameters <- optim(par = init_params, fn = goose_growth, data = data,
+    get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat,
                             hessian = TRUE);
     
     # Updates progress bar when running as Shiny app
@@ -279,7 +279,8 @@ get_goose_paras <- function(data, init_params = NULL){
 }
 
 ### This is an attempt at a function that simulates from parameter distributions
-res_sim <- function(pars, dat, past=F, reps=100) {
+res_sim <- function(pars, dat, past=FALSE, reps=1000) {
+  
   params <- pars$par
   ses <- SEfromHessian(pars$hessian)
   dat$y_mn <- NA
@@ -287,7 +288,7 @@ res_sim <- function(pars, dat, past=F, reps=100) {
   dat$y_hi <- NA
   
   if(past==FALSE) {
-    calc_dat <- dat[dat$Year>(last_year-2),]
+    calc_dat <- dat[dat$Year>(last_year-3),]
   } else {
     calc_dat <- dat
   }
@@ -322,7 +323,7 @@ res_sim <- function(pars, dat, past=F, reps=100) {
 }
 
 
-goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
+goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
                             plot = TRUE){
 
     ### goose_plot_pred()
@@ -333,28 +334,32 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
     ### - May produce a plot of predictions if requested (plot= argument)
     ### - Returns vector of population predictions (Npred)  
   
-    params <- get_goose_paras(data = data);
+    params <- get_goose_paras(dat);
     
-    #Npred  <- goose_pred(para = params$par, data = data);
+    #Npred  <- goose_pred(para = params$par, dat = dat);    ## POINT PREDICTION ONLY
 
-    data_sims <- res_sim(params, dat=data, past=TRUE)
-    Npred_mn <- data_sims$y_mn
-    Npred_lo <- data_sims$y_lo
-    Npred_hi <- data_sims$y_hi
+    data_sims <- res_sim(params, dat=dat, past=TRUE)       ## POINT PREDICTION WITH UPPER/LOWER
+    Npred <- data_sims$y_mn
+    
+    Npred_lo <- data_sims$y_lo[length(data_sims$y_lo)]
+    Npred_hi <- data_sims$y_hi[length(data_sims$y_hi)]
+    Npred_mn <- data_sims$y_mn[length(data_sims$y_mn)]
+    
+    assign("Npred_mn", Npred_mn, envir = globalenv())
     assign("Npred_lo", Npred_lo, envir = globalenv())
     assign("Npred_hi", Npred_hi, envir = globalenv())
     
-    yrs    <- year_start:(year_start + length(data$y) - 1);
-    if(plot == TRUE){
+    if(plot == TRUE){      ## DEFAULT == FALSE
+        yrs    <- year_start:(year_start + length(dat$y) - 1);
         par(mar = c(5, 5, 1, 1));
-        plot(x =  yrs, y = data$y, pch = 1, ylim = ylim, cex.lab = 1.5,
+        plot(x =  yrs, y = dat$y, pch = 1, ylim = ylim, cex.lab = 1.5,
              xlab="Year", ylab="Population size")         # Observed time series
         points(x = yrs, y = Npred, pch = 19, col = "red") # Predict time series
-        oend <- length(data$y);
-        points(x = yrs[3:oend], y = data$y[2:(oend - 1)], pch = 19,
+        oend <- length(dat$y);
+        points(x = yrs[3:oend], y = dat$y[2:(oend - 1)], pch = 19,
                col = "blue");
     }
-    return(Npred_mn);
+    return(Npred);
 }
 
 # goose_predict_and_plot <- function(file, plot = TRUE){
@@ -364,7 +369,7 @@ goose_plot_pred <- function(data, year_start = 1987, ylim = c(10000, 60000),
 #     return(goosep);
 # }
 
-goose_gmse_popmod <- function(goose_data){
+goose_gmse_popmod <- function(dat){
   
     ### goose_gmse_popmod()
     ###
@@ -373,7 +378,7 @@ goose_gmse_popmod <- function(goose_data){
     ###    population model prediction.
     ### - Returns a single new population projection for a following year.
   
-    N_pred <- goose_plot_pred(data = goose_data, plot = FALSE);
+    N_pred <- goose_plot_pred(dat = dat, plot = FALSE);
     N_pred <- floor(N_pred)
     N_last <- length(N_pred);
     New_N  <- as.numeric(N_pred[N_last]);
@@ -393,7 +398,8 @@ goose_gmse_obsmod <- function(resource_vector, obs_error, use_est){
     ###  - Returns an observed population size given obs_error in the observation 
     ###  - use_est allows for return optgoose_gmse_popmodimistic or pessimistic bounds.
     
-    obs_err    <- rnorm(n = 1, mean = 0, sd = obs_error);
+    obs_err    <- rnorm(n = 1, mean = 0, sd = obs_error);    
+    #params <- get_goose_paras(data = data);
     obs_vector <- resource_vector + obs_err;
     if(use_est == -1){
         obs_vector <- obs_vector - abs(obs_error * 1.96);

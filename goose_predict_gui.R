@@ -3,9 +3,6 @@
 library(GMSE)
 library(tools)
 library(readxl)
-library(foreach)
-library(doParallel)
-library(doMC)
 library(HelpersMG)
 
 flattenlist <- function(x){  
@@ -144,14 +141,14 @@ goose_clean_data <- function(file){
     #  (NA) but the other was, the missing number is treated as zero, i.e. the total 
     #  culled on G'land and Icelan#d (HB) is always at least the number available for 
     #  one of them (i.e. avoid NA's in a sum including NA's):
-    
+    goose_clean_data
     data$IcelandCull[is.na(data$IcelandCull)] <- 0
     data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
     data$HB <- data$IcelandCull+data$GreenlandCull
     data$HB[data$HB==0] <- NA
     data$IcelandCull[data$IcelandCull==0] <- NA
     data$GreenlandCull[data$GreenlandCull==0] <- NA
-    
+
     return(data);
 }  
 
@@ -306,7 +303,7 @@ res_sim <- function(pars, dat, past=FALSE, reps=1000) {
   pred_with_new <- function(z) {
     goose_pred(ER(params,ses), z)
   }
-  res_sim_list <- lapply(datr, pred_with_new)
+  res_sim_list <- mclapply(datr, pred_with_new, mc.cores = 8)
   
   res_sim <- as.data.frame(NULL)
   for(i in 1:length(res_sim_list)) {
@@ -398,7 +395,7 @@ goose_gmse_obsmod <- function(resource_vector, obs_error, use_est){
     ###
     ### Observation model for gmse()
     ###  - Returns an observed population size given obs_error in the observation 
-    ###  - use_est allows for return optgoose_gmse_popmodimistic or pessimistic bounds.
+    ###  - use_est allows for return optimistic or pessimistic bounds.
     
     obs_err    <- rnorm(n = 1, mean = 0, sd = obs_error);    
     #params <- get_goose_paras(data = data);
@@ -582,30 +579,39 @@ ER <- function(paras,ses) {
 }
 
 
-gmse_goose <- function(data_file, manage_target=manage_target, max_HB, 
-                       obs_error = 1438.614, years, use_est = "normal",
-                       plot = TRUE){
+gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error, 
+                       use_est = "normal",
+                       plot = FALSE){
   
     # -- Initialise ------------------------------------------------------------
+
     proj_yrs   <- years
+
     goose_data <- goose_clean_data(file = data_file)
+
     last_year  <- goose_data[dim(goose_data)[1], 1]
-    use_est    <- 0
-    if(use_est == "cautious"){
-        use_est <- -1
-    }
-    if(use_est == "aggressive"){
-        use_est <- 1
-    }
-    #assign("goose_data", goose_data, envir = globalenv() )
-    #assign("target", manage_target, envir = globalenv() )
-    #assign("max_HB", max_HB, envir = globalenv() )
-    #assign("obs_error", obs_error, envir = globalenv() )
-    #assign("use_est", use_est, envir = globalenv() )
     
-    goose_data$Npred_mn <- NA
-    goose_data$Npred_lo <- NA
-    goose_data$Npred_hi <- NA
+    # use_est    <- 0
+    # if(use_est == "cautious"){
+    #     use_est <- -1
+    # }
+    # if(use_est == "aggressive"){
+    #     use_est <- 1
+    # }
+    # assign("goose_data", goose_data, envir = globalenv() )
+    # assign("target", manage_target, envir = globalenv() )
+    # assign("max_HB", max_HB, envir = globalenv() )
+    # assign("obs_error", obs_error, envir = globalenv() )
+    # assign("use_est", use_est, envir = globalenv() )
+    
+    # goose_data$Npred_mn <- NA
+    # goose_data$Npred_lo <- NA
+    # goose_data$Npred_hi <- NA
+    
+    print('before gmse_apply 1')
+
+    print(goose_data)
+    print(environment(goose_data))
     
     gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod, 
                              obs_mod = goose_gmse_obsmod,
@@ -613,20 +619,26 @@ gmse_goose <- function(data_file, manage_target=manage_target, max_HB,
                              use_mod = goose_gmse_usrmod,
                              dat = goose_data, obs_error = obs_error,
                              manage_target = manage_target, max_HB = max_HB,
-                             use_est = use_est, stakeholders = 1, 
-                             get_res = "full");
+                             use_est = 0, stakeholders = 1, 
+                             get_res = "full")
+    
+    print('after gmse_apply 1')
     
     goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
-                                 goose_data = goose_data);
+                                 goose_data = goose_data)
+    
     goose_data$Npred_mn[nrow(goose_data)] <- Npred_mn-gmse_res$basic$user_results
     goose_data$Npred_lo[nrow(goose_data)] <- Npred_lo-gmse_res$basic$user_results
     goose_data$Npred_hi[nrow(goose_data)] <- Npred_hi-gmse_res$basic$user_results
     
-    
     # Start 'while' loop
+   
     while(years > 1){
       
+      print(paste('while loop', years))
+      
       if(goose_data$y[nrow(goose_data)]<1) {
+        print('EXTINCTION')
         extinct <- TRUE
         goose_data$y[nrow(goose_data)] <- 0
         goose_data$Count[nrow(goose_data)] <- 0
@@ -647,7 +659,7 @@ gmse_goose <- function(data_file, manage_target=manage_target, max_HB,
                                      man_mod = goose_gmse_manmod,
                                      use_mod = goose_gmse_usrmod,
                                      dat = goose_data,
-                                     manage_target = manage_target, use_est = use_est,
+                                     manage_target = manage_target, use_est = 0 ,
                                      max_HB = max_HB, obs_error = obs_error,
                                      stakeholders = 1, get_res = "full");
         
@@ -682,12 +694,12 @@ gmse_goose <- function(data_file, manage_target=manage_target, max_HB,
         goose_data <- rbind(goose_data, adds)
         years <- 1
       }
-      
-      years <- years - 1;
+
+      years <- years - 1
     }
     
     
-    return(goose_data);
+    return(goose_data)
 }
 
 
@@ -696,53 +708,56 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
                                  max_HB, iterations, 
                                  use_est = "normal"){
     
-    goose_multidata <- NULL;
-
-    for(i in 1:iterations){
-
-      goose_multidata[[i]] <- gmse_goose(data_file = data_file,
-                                         obs_error = obs_error,
-                                         years = proj_yrs,
-                                         manage_target = manage_target,
-                                         max_HB = max_HB, plot = FALSE,
-                                         use_est = use_est);
-      print(paste("Simulating ---------------------------------------> ",i));
+  goose_multidata <- NULL
+  
+  for(i in 1:iterations){
+    
+    goose_multidata[[i]] <- gmse_goose(data_file = data_file,
+                                       obs_error = obs_error,
+                                       years = proj_yrs,
+                                       manage_target = manage_target,
+                                       max_HB = max_HB, plot = FALSE,
+                                       use_est = 0)
+    #print(paste("Simulating ---------------------------------------> ",i))
+    
     }
-
-    goose_data <- goose_multidata[[1]];
-    dat        <- goose_data[-1,];
-    last_year  <- dat[dim(dat)[1], 1];
-    yrs        <- dat[,1];
-    NN         <- dat[,10]; 
-    HB         <- dat[,3];
-    pry        <- (last_year - proj_yrs):last_year;
-    obsrvd     <- 1:(dim(dat)[1] - proj_yrs - 1);
-    par(mar = c(5, 5, 1, 1));
+    
+    goose_data <- goose_multidata[[1]]
+    dat        <- goose_data[-1,]
+    last_year  <- dat[dim(dat)[1], 1]
+    yrs        <- dat[,1]
+    NN         <- dat[,10]
+    HB         <- dat[,3]
+    pry        <- (last_year - proj_yrs):last_year
+    obsrvd     <- 1:(dim(dat)[1] - proj_yrs - 1)
+    par(mar = c(5, 5, 1, 1))
     plot(x = yrs, y = NN, xlab = "Year", ylab = "Population size",
          cex = 1.25, pch = 20, type = "n", ylim = c(0, max(NN+20)), 
-         cex.lab = 1.1, cex.axis = 1.1, lwd = 2);
+         cex.lab = 1.1, cex.axis = 1.1, lwd = 2)
     polygon(x = c(pry, 2*last_year, 2*last_year, rev(pry)), 
             y = c(rep(x = -10000, times = length(pry) + 1), 
                   rep(x = 2*max(NN), times = length(pry) + 1)), 
-            col = "grey", border = NA);
-    box();
-    points(x = yrs[obsrvd], y = NN[obsrvd], cex = 1.25, pch = 20, type = "b");
-    abline(h = manage_target, lwd = 0.8, lty = "dotted");
-    text(x = dat[5,1], y = 50000, labels = "Observed", cex = 1.75);
-    text(x = pry[length(pry)], y = 50000, labels = "Projected", cex = 1.75, pos = 2);
+            col = "grey", border = NA)
+    box()
+    points(x = yrs[obsrvd], y = NN[obsrvd], cex = 1.25, pch = 20, type = "b")
+    abline(h = manage_target, lwd = 0.8, lty = "dotted")
+    text(x = dat[5,1], y = 50000, labels = "Observed", cex = 1.75)
+    text(x = pry[length(pry)], y = 50000, labels = "Projected", cex = 1.75, pos = 2)
+    
     for(i in 1:length(goose_multidata)){
-      goose_data <- goose_multidata[[i]];
-      dat <- goose_data[-1,];
-      yrs <- dat[,1];
-      NN  <- dat[,10];
-      HB  <- dat[,3];
-      pry <- (last_year):(yrs[length(yrs)]-2+20);
-      points(x = yrs, y = NN, pch = 20, type = "l", lwd = 0.6);
+      goose_data <- goose_multidata[[i]]
+      dat <- goose_data[-1,]
+      yrs <- dat[,1]
+      NN  <- dat[,10]
+      HB  <- dat[,3]
+      pry <- (last_year):(yrs[length(yrs)]-2+20)
+      points(x = yrs, y = NN, pch = 20, type = "l", lwd = 0.6)
     }
+    
     dev.copy(png,file="mainPlot.png", width=800, height=800)
     dev.off()
     
-    return(goose_multidata);
+    return(goose_multidata)
 }
 
 

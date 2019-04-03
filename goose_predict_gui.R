@@ -718,8 +718,6 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
                                        manage_target = manage_target,
                                        max_HB = max_HB, plot = FALSE,
                                        use_est = 0)
-    #print(paste("Simulating ---------------------------------------> ",i))
-    
     }
     
     goose_data <- goose_multidata[[1]]

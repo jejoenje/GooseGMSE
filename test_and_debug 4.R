@@ -5,8 +5,8 @@
   library(scales)
   
   input <- list(input_name=data.frame(
-    datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/Islay_Stirling_2015.xls')),
-    sims_in=1000, yrs_in=10, maxHB_in=2500, target_in=29000)
+    datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/Test_to_2015.csv')),
+    sims_in=5, yrs_in=5, maxHB_in=2500, target_in=29000)
   input$input_name$datapath <- as.vector(input$input_name$datapath)
   iterations <- input$sims_in
   years <- input$yrs_in
@@ -16,6 +16,8 @@
   data_file <- as.vector(input$input_name$datapath)
   obs_error = 1438.614
   plot = TRUE
+  
+  resamp = FALSE
   
   extinct = FALSE
   
@@ -121,8 +123,11 @@
     
   })
   
-  save(goose_multidata, file='Example_sims_1000.Rdata')
+  save(goose_multidata, file='Example_sims_1000_2.Rdata')
 
+
+  
+  
 Fig6 <- function() {
   past_years <- goose_multidata[[1]]$Year<=last_year
   con_years <- goose_multidata[[1]]$Year==2015 | goose_multidata[[1]]$Year==2016
@@ -158,7 +163,7 @@ Fig6 <- function() {
   text(x=1987, y=50000, 'Observed', pos=4)
 }
 
-tiff(file = 'Figure6.tiff')
+tiff(file = 'Figure6_2.tiff')
 Fig6()
 dev.off()
 
@@ -197,6 +202,6 @@ Fig5 <- function() {
   text(x=1987, y=50000, 'Observed', pos=4)
 }
 
-tiff(file = 'Figure5.tiff')
+tiff(file = 'Figure5_2.tiff')
 Fig5()
 dev.off()

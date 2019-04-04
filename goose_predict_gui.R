@@ -4,6 +4,7 @@ library(GMSE)
 library(tools)
 library(readxl)
 library(HelpersMG)
+library(parallel)
 
 flattenlist <- function(x){  
   morelists <- sapply(x, function(xprime) class(xprime)[1]=="list")
@@ -114,42 +115,48 @@ goose_rescale_AIG <- function(data, years = 22){
 
 goose_clean_data <- function(file){
   
-    ### goose_clean_data()
-    ### 
-    ### Single argument, which is a character string of the input file to be loaded.
-    ### - Calls load_input()
-    ### - Calculates 'working' data, i.e. total number of geese, scales/standardises 
-    ###    input variables for model fit.
-    ### - Calculates total number culled on Iceland and Greenland as variable HB, 
-    ###    ignoring any NA's.
+  ### goose_clean_data()
+  ### 
+  ### Single argument, which is a character string of the input file to be loaded.
+  ### - Calls load_input()
+  ### - Calculates 'working' data, i.e. total number of geese, scales/standardises 
+  ###    input variables for model fit.
+  ### - Calculates total number culled on Iceland and Greenland as variable HB, 
+  ###    ignoring any NA's.
   
-    data   <- load_input(file);              # Load dataset
-    
-    # data$y is the observed count plus the number culled on Islay:
-    data$y <- data$Count+data$IslayCull
-      
-    # Rescale AIG ensuring consistency in measurementS:
-    data   <- goose_rescale_AIG(data = data, years = 22);
-    
-    # Scale/standardise environmental variables:
-    data$AugTemp   <- as.numeric( scale(data$AugTemp) )
-    data$IslayTemp <- as.numeric( scale(data$IslayTemp) )
-    data$AugRain   <- as.numeric( scale(data$AugRain) )
-    data$AIG.sc    <- as.numeric( scale(data$AIG) )
-    
-    # The following ensures that if either G'land or Iceland culls were unavailable 
-    #  (NA) but the other was, the missing number is treated as zero, i.e. the total 
-    #  culled on G'land and Icelan#d (HB) is always at least the number available for 
-    #  one of them (i.e. avoid NA's in a sum including NA's):
-    goose_clean_data
-    data$IcelandCull[is.na(data$IcelandCull)] <- 0
-    data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
-    data$HB <- data$IcelandCull+data$GreenlandCull
-    data$HB[data$HB==0] <- NA
-    data$IcelandCull[data$IcelandCull==0] <- NA
-    data$GreenlandCull[data$GreenlandCull==0] <- NA
-
-    return(data);
+  data   <- load_input(file);              # Load dataset
+  
+  av.cull.per.month <- round(data$IslayCull/5)
+  
+  # Add to count
+  monthly.count.plu.av.cull <- data[1:nrow(data),c("November","December","January","February","March")]+av.cull.per.month
+  
+  # data$y is the observed count plus the number culled on Islay:
+  #data$y <- data$Count+data$IslayCull
+  data$y <- round(apply(monthly.count.plu.av.cull,1,mean,na.rm=T))
+  
+  # Rescale AIG ensuring consistency in measurementS:
+  data   <- goose_rescale_AIG(data = data, years = 22);
+  
+  # Scale/standardise environmental variables:
+  data$AugTemp   <- as.numeric( scale(data$AugTemp) )
+  data$IslayTemp <- as.numeric( scale(data$IslayTemp) )
+  data$AugRain   <- as.numeric( scale(data$AugRain) )
+  data$AIG.sc    <- as.numeric( scale(data$AIG) )
+  
+  # The following ensures that if either G'land or Iceland culls were unavailable 
+  #  (NA) but the other was, the missing number is treated as zero, i.e. the total 
+  #  culled on G'land and Icelan#d (HB) is always at least the number available for 
+  #  one of them (i.e. avoid NA's in a sum including NA's):
+  
+  data$IcelandCull[is.na(data$IcelandCull)] <- 0
+  data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
+  data$HB <- data$IcelandCull+data$GreenlandCull
+  #data$HB[data$HB==0] <- NA
+  #data$IcelandCull[data$IcelandCull==0] <- NA
+  #data$GreenlandCull[data$GreenlandCull==0] <- NA
+  
+  return(data);
 }  
 
 # goose_growth <- function(para, data){
@@ -323,7 +330,7 @@ res_sim <- function(pars, dat, past=FALSE, reps=1000) {
 
 
 goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
-                            plot = TRUE){
+                            plot = TRUE, resamp = TRUE ){
 
     ### goose_plot_pred()
     ###
@@ -332,22 +339,33 @@ goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
     ### - Calls goose_pred() to obtain population prediction using optimised parameter estimates
     ### - May produce a plot of predictions if requested (plot= argument)
     ### - Returns vector of population predictions (Npred)  
-  
-    params <- get_goose_paras(dat);
-    
-    #Npred  <- goose_pred(para = params$par, dat = dat);    ## POINT PREDICTION ONLY
 
-    data_sims <- res_sim(params, dat=dat, past=TRUE)       ## POINT PREDICTION WITH UPPER/LOWER
-    Npred <- data_sims$y_mn
+    params <- get_goose_paras(dat);
+  
+    if (resamp == FALSE) {
+      Npred  <- goose_pred(para = params$par, dat = dat);    ## POINT PREDICTION ONLY 
+      
+      Npred_lo <- NA
+      Npred_hi <- NA
+      Npred_mn <- NA
+      
+      
+    } else {
+      
+      data_sims <- res_sim(params, dat=dat, past=TRUE)       ## POINT PREDICTION WITH UPPER/LOWER
+      Npred <- data_sims$y_mn
+      
+      Npred_lo <- data_sims$y_lo[length(data_sims$y_lo)]
+      Npred_hi <- data_sims$y_hi[length(data_sims$y_hi)]
+      Npred_mn <- data_sims$y_mn[length(data_sims$y_mn)]
+
+    }
     
-    Npred_lo <- data_sims$y_lo[length(data_sims$y_lo)]
-    Npred_hi <- data_sims$y_hi[length(data_sims$y_hi)]
-    Npred_mn <- data_sims$y_mn[length(data_sims$y_mn)]
-    
-    assign("Npred_mn", Npred_mn, envir = globalenv())
     assign("Npred_lo", Npred_lo, envir = globalenv())
     assign("Npred_hi", Npred_hi, envir = globalenv())
+    assign("Npred_mn", Npred_mn, envir = globalenv())
     
+  
     if(plot == TRUE){      ## DEFAULT == FALSE
         yrs    <- year_start:(year_start + length(dat$y) - 1);
         par(mar = c(5, 5, 1, 1));
@@ -377,7 +395,7 @@ goose_gmse_popmod <- function(dat){
     ###    population model prediction.
     ### - Returns a single new population projection for a following year.
   
-    N_pred <- goose_plot_pred(dat = dat, plot = FALSE);
+    N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = resamp);
     N_pred <- floor(N_pred)
     N_last <- length(N_pred);
     New_N  <- as.numeric(N_pred[N_last]);
@@ -477,9 +495,9 @@ sim_goose_data <- function(gmse_results, goose_data){
     ### - Adds this new line of data and return - value y is used as the basis for next year's projection.
     
     # gmse_pop holds the 'resource_results' from GMSE; i.e. the population projection for one year ahead.
-    gmse_pop   <- gmse_results$resource_results;
+    gmse_pop   <- gmse_results$resource_results
     # gmse_obs holds the GMSE observation results.
-    gmse_obs   <- gmse_results$observation_results;
+    gmse_obs   <- gmse_results$observation_results
     
     # gmse_man and gmse_cul holds GMSE manager results and GMSE user results, respectively.
     if(length(gmse_results$manager_results) > 1){
@@ -505,40 +523,54 @@ sim_goose_data <- function(gmse_results, goose_data){
     new_r     <- rep(x = 0, times = cols);
     
     # YEAR: New year is last year plus 1:
-    new_r[1]  <- goose_data[rows, 1] + 1;
+    new_Year <- goose_data[rows, 'Year'] + 1
     
     # COUNT: New population count is the number projected by GMSE minus the number proposed culled 
     #  (starting point for population projection for following year):
-    new_r[2]  <- gmse_pop - gmse_cul;
+    new_Count <-  gmse_pop - gmse_cul
     
     # ICELANDCULL: Set to NA as we are not explicitly separating numbers culled on either Iceland 
     #  or Greenland (See HB below).
-    new_r[3]  <- NA;                   
-    
+    new_IcelandCull <- NA
     # ISLAYCULL: Number proposed culled on Islay in projected year./
-    new_r[4]  <- gmse_cul;             
-    
+    new_IslayCull  <- gmse_cul
     # GREENLANDCULL: Set to NA as we are not explicitly separating numbers culled on either Iceland 
     #  or Greenland.
-    new_r[5]  <- NA;                  
-    
+    new_GreenlandCull  <- NA
     # Future AIG, IslayTemp, AugRain and AugTemp are sampled randomly from previous years' data:
-    new_r[6]  <- sample_trended(goose_data[,6]);
-    new_r[7]  <- sample_trended(goose_data[,7]);
-    new_r[8]  <- sample_trended(goose_data[,8]);
-    new_r[9]  <- sample_trended(goose_data[,9]);
+    new_AIG <- sample_trended(goose_data[,'AIG'])
+    new_IslayTemp <- sample_trended(goose_data[,'IslayTemp'])
+    new_AugRain <- sample_trended(goose_data[,'AugRain'])
+    new_AugTemp <- sample_trended(goose_data[,'AugTemp'])
     
     # y: In observed years this was count + no. culled on Islay, in projected years this is GMSE 
     #  projection MINUS numbers proposed culled on Islay (i.e. the number culled on Islay is assumed 
     #  to be exactly what was set as the target cull). This is the population number used as the 
     #  starting point for next year's projection.
-    new_r[10] <- gmse_pop - gmse_cul; 
+    new_y <- gmse_pop - gmse_cul; 
     
     # Future AIG.sc and HB (total hunting bag on Iceland and Greenland) are sampled randomly from 
     #  previous years' data.
-    new_r[11] <- sample_trended(goose_data[,11]);
-    new_r[12] <- sample_trended(goose_data[,12]);
+    new_AIG.sc <- sample_trended(goose_data[,'AIG.sc']);
+    new_HB <- sample_trended(goose_data[,'HB']);
     
+    # Fill in values for monthly counts (all NA for projections)
+    new_Monthly <- rep(NA,5)
+    
+    new_r <- c(new_Year, 
+               new_Monthly, 
+               new_Count, 
+               new_IcelandCull, 
+               new_IslayCull, 
+               new_GreenlandCull, 
+               new_AIG, 
+               new_IslayTemp, 
+               new_AugRain, 
+               new_AugTemp, 
+               new_y, 
+               new_AIG.sc, 
+               new_HB)
+      
     # Add new projected data to existing data, and return:
     new_dat   <- rbind(goose_data, new_r);
     return(new_dat);
@@ -676,6 +708,11 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
         rem_yrs <- (last_year+proj_yrs)-cur_yr
         
         adds <- data.frame(Year=(cur_yr+1):(cur_yr+rem_yrs),
+                           November=NA,
+                           December=NA,
+                           January=NA,
+                           February=NA,
+                           March=NA,
                            Count=0,
                            IcelandCull=NA,
                            IslayCull=NA,

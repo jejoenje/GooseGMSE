@@ -292,7 +292,7 @@ goose_pred <- function(para, dat){
   N_pred    <- rep(NA, data_rows)
   
   # Starting at year 3 (we need data from at least 2 years ago), run through each input line.
-  for(time in 3:data_rows){
+  for(time in 3:data_rows) {
       # Reproduction rate is max growth rate times previous years' population size
       goose_repr   <- r_val * dat$y[time - 1];
       # Goose density/carrying capacity term is function of numbers in previous year, K and AIG

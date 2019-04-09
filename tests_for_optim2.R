@@ -1,4 +1,5 @@
-library(optimParallel)
+library(parallel)
+library(foreach)
 
 source('ggmse_default_test_pars.R')
 goose_data <- goose_clean_data(file = data_file)
@@ -13,26 +14,19 @@ if( is.null(init_params) ) {
   init_params    <- c(0.1,6,0,0,0,0);                
 }
 
-cl <- makeCluster(detectCores())
-setDefaultCluster(cl=cl)
-
-clusterExport(cl, c('goose_data','goose_pred'))
-
 system.time({
   get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, 
                           hessian = TRUE);  
 })
 get_parameters$par
 
-system.time({
-  get_parameters <- optimParallel(par = init_params, fn = goose_growth, dat = dat, 
-                          hessian = TRUE);  
-})
-
 goose_multidata <- NULL
 
+cl <- parallel::makeForkCluster(8)
+doParallel::registerDoParallel(cl)
+
 timing <- system.time({
-  for(i in 1:iterations){
+  foreach(i=1:iterations, .combine='c') %dopar% {
     
     years <- proj_yrs
     

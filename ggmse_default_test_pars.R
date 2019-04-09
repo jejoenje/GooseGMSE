@@ -5,7 +5,7 @@ source('goose_predict_gui.R')
 library(scales)
 
 input <- list(input_name=data.frame(
-  datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/example_data_UPDATED_April2019.csv')),
+  datapath=as.vector('~/example_data_UPDATED_April2019.csv')),
   sims_in=10, yrs_in=10, maxHB_in=2500, target_in=29000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in

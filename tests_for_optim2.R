@@ -1,6 +1,4 @@
 library(optimParallel)
-cl <- makeCluster(detectCores())
-setDefaultCluster(cl=cl)
 
 source('ggmse_default_test_pars.R')
 goose_data <- goose_clean_data(file = data_file)
@@ -24,17 +22,20 @@ if( is.null(init_params) ) {
   init_params    <- c(0.1,6,0,0,0,0);                
 }
 
+cl <- makeCluster(detectCores())
+setDefaultCluster(cl=cl)
+
 clusterExport(cl, c('goose_data','goose_pred'))
 
 system.time({
   get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, 
-                          hessian = TRUE, method = 'L-BFGS-B');  
+                          hessian = TRUE, method = 'BFGS');  
 })
 get_parameters$par
 
 system.time({
   get_parameters <- optimParallel(par = init_params, fn = goose_growth, dat = dat, 
-                          hessian = TRUE, method = 'L-BFGS-B');  
+                          hessian = TRUE, method = 'BFGS');  
 })
 
 

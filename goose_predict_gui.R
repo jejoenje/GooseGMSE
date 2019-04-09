@@ -172,7 +172,7 @@ goose_clean_data <- function(file){
   return(data);
 }  
 
-# goose_growth <- function(para, data){
+# get_parameters <- function(para, data){
 #   
 #   ### goose_growth()
 #   ### OLD FUNCTION VERSION - HERE JUST FOR REFERENCE
@@ -204,7 +204,7 @@ goose_growth <- function(para, dat) {
 ## RETURNS NEGATIVE LOG LIKELIHOOD  - for mle2()
 goose_growth_mle <- function(b1, b2, b3, b4, b5, b6, dat=goose_data) {
   data_rows <- dim(dat)[1];
-  N_pred <- goose_pred_mle(b1, b2, b3, b4, b5, b6, dat = dat);
+  N_pred <- goose_pred_mle(b1=b1, b2=b2, b3=b3, b4=b4, b5=b5, b6=b6, dat = dat);
   return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))
 }
 
@@ -356,6 +356,7 @@ get_goose_paras <- function(dat, init_params = NULL){
     contr_paras    <- list(trace = 1, maxit = 500);
     # get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, method='L-BFGS-B', control = contr_paras,
     #                         hessian = TRUE);
+    
     get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, 
                             hessian = TRUE);
         

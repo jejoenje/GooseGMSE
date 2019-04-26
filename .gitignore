@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+archive/
 GooseGMSE.Rproj
 mainPlot.png
 cull_summary.Rdata
@@ -10,4 +11,3 @@ output_summary.Rdata
 input.Rdata
 sims.Rdata
 zoomPlot.png
-archive/

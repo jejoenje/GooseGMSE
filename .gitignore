@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+archive/
 GooseGMSE.Rproj
 mainPlot.png
 cull_summary.Rdata

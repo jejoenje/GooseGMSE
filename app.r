@@ -1,25 +1,26 @@
-rm(list=ls()) # Housekeeping for testing
+### FOR TESTING RUN FROM HERE
+
+# rm(list=ls()) # Housekeeping for testing
 library(shiny)
 library(DT)
 library(markdown)
 library(rmarkdown)
 library(knitr)
-library(kableExtra)
+#library(kableExtra)
 
 source('goose_predict_gui.R')
 
-# # ### for testing only:
-# input <- list(input_name=data.frame(datapath=as.vector('~/Downloads/Islay_Stirling_ADDED.xls')),
-#    sims_in=5, yrs_in=5, maxHB_in=2000, target_in=32000)
-# input$input_name$datapath <- as.vector(input$input_name$datapath)
-# iterations <- input$sims_in
-# years <- input$yrs_in
-# proj_yrs <- years
-# manage_target <- input$target_in
-# max_HB <- input$maxHB_in
-# data_file <- as.vector(input$input_name$datapath)
-# obs_error = 1438.614
-# plot = TRUE
+plot <- FALSE
+past <- FALSE
+resamp <- TRUE
+extinct <- FALSE  
+prev_params <- NULL
+
+assign("plot", plot, envir = globalenv())
+assign("past", past, envir = globalenv())
+assign("resamp", resamp, envir = globalenv())
+assign("extinct", extinct, envir = globalenv())
+assign("prev_params", prev_params, envir = globalenv())
 
 progress_i <- 0
 assign("progress_i", progress_i, envir = globalenv())
@@ -51,7 +52,7 @@ cull_table_format <- htmltools::withTags(table(
 ui <- fluidPage(
   
   titlePanel(
-      "Goose-GMSE (v. 1.0)", windowTitle = "Goose-GMSE"
+      "Goose-GMSE (v. 1.1, April 2019)", windowTitle = "Goose-GMSE"
   ),
   
   sidebarLayout(
@@ -107,8 +108,7 @@ ui <- fluidPage(
                    Greenland barnacle geese on Islay\""), "(Bunnefeld et al 2018 in review)."
                    ),
                  p("Uncertainty in population numbers in previous years is implemented in two ways. First, observation uncertainty is taken as a fixed variance 
-                   derived
-                   from the intra-winter differences in counts made on subsequent days.", 
+                   derived from the intra-winter differences in counts made on subsequent days.", 
                    span("This observation uncertainty cannot currently be changed by the user.", style = "color:red"),
                    "Second, uncertainty regarding environmental 
                    conditions is currently represented by randomly sampling from environmental data measured over all previous years and re-running the population 
@@ -236,11 +236,17 @@ server <- function(session, input, output) {
         manage_target = input$target_in)
 
     # This re-plots the simulations but only for the projected range:
-    gmse_print_multiplot(goose_multidata = sims, manage_target = input$target_in, proj_yrs = input$yrs_in)
+
+    #gmse_print_multiplot(goose_multidata = sims, manage_target = input$target_in, proj_yrs = input$yrs_in)
     
     assign("sims", sims, envir = globalenv())
     assign("input", input, envir = globalenv())
-    input_list <- data.frame(datapath=input$input_name$datapath, sims_in=input$sims_in, yrs_in=input$yrs_in, maxHB_in=input$maxHB_in, target_in=input$target_in)
+    input_list <- data.frame(datapath=input$input_name$datapath, 
+                             sims_in=input$sims_in, 
+                             yrs_in=input$yrs_in, 
+                             maxHB_in=input$maxHB_in, 
+                             target_in=input$target_in)
+
     save(input_list, file='input.Rdata')
     save(sims, file='sims.Rdata')
   })

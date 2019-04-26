@@ -16,15 +16,15 @@ max_HB <- input$maxHB_in
 data_file <- as.vector(input$input_name$datapath)
 obs_error = 1438.614
 
-plot = TRUE
+plot = FALSE
 past = FALSE
 
 resamp = TRUE
-
 extinct = FALSE  
-
 prev_params <- NULL
 
-load('Example_sims_1000.Rdata')
+
+
+#load('Example_sims_1000.Rdata')
 
 goose_multidata <- NULL

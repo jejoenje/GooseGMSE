@@ -14,10 +14,8 @@ if( is.null(init_params) ) {
   init_params    <- c(0.1,6,0,0,0,0);                
 }
 
-system.time({
-  get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, 
-                          hessian = TRUE);  
-})
+
+
 get_parameters$par
 
 goose_multidata <- NULL
@@ -119,7 +117,7 @@ timing <- system.time({
                            Npred_lo=NA,
                            Npred_hi=NA
         )
-        goose_data <- rbind(goose_data, adds)
+        gogoose_multidata <- NULLose_data <- rbind(goose_data, adds)
         years <- 1
       }
       

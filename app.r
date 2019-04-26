@@ -10,6 +10,18 @@ library(kableExtra)
 
 source('goose_predict_gui.R')
 
+plot <- FALSE
+past <- FALSE
+resamp <- TRUE
+extinct <- FALSE  
+prev_params <- NULL
+
+assign("plot", plot, envir = globalenv())
+assign("past", past, envir = globalenv())
+assign("resamp", resamp, envir = globalenv())
+assign("extinct", extinct, envir = globalenv())
+assign("prev_params", prev_params, envir = globalenv())
+
 progress_i <- 0
 assign("progress_i", progress_i, envir = globalenv())
 updateProgress <- function() {
@@ -96,7 +108,7 @@ ui <- fluidPage(
                    Greenland barnacle geese on Islay\""), "(Bunnefeld et al 2018 in review)."
                    ),
                  p("Uncertainty in population numbers in previous years is implemented in two ways. First, observation uncertainty is taken as a fixed variance 
-                   derived
+                   derivedprev_paramsprev_params
                    from the intra-winter differences in counts made on subsequent days.", 
                    span("This observation uncertainty cannot currently be changed by the user.", style = "color:red"),
                    "Second, uncertainty regarding environmental 
@@ -225,11 +237,15 @@ server <- function(session, input, output) {
         manage_target = input$target_in)
 
     # This re-plots the simulations but only for the projected range:
-    gmse_print_multiplot(goose_multidata = sims, manage_target = input$target_in, proj_yrs = input$yrs_in)
+    #gmse_print_multiplot(goose_multidata = sims, manage_target = input$target_in, proj_yrs = input$yrs_in)
     
     assign("sims", sims, envir = globalenv())
     assign("input", input, envir = globalenv())
-    input_list <- data.frame(datapath=input$input_name$datapath, sims_in=input$sims_in, yrs_in=input$yrs_in, maxHB_in=input$maxHB_in, target_in=input$target_in)
+    input_list <- data.frame(datapath=input$input_name$datapath, 
+                             sims_in=input$sims_in, 
+                             yrs_in=input$yrs_in, 
+                             maxHB_in=input$maxHB_in, 
+                             target_in=input$target_in)
     save(input_list, file='input.Rdata')
     save(sims, file='sims.Rdata')
   })

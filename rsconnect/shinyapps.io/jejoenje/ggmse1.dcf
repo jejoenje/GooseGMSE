@@ -5,15 +5,9 @@ account: jejoenje
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 383723
-<<<<<<< HEAD
-bundleId: 1488956
-url: https://jejoenje.shinyapps.io/ggmse1/
-when: 1531999998.97487
-=======
 bundleId: 1595314
 url: https://jejoenje.shinyapps.io/ggmse1/
 when: 1537437489.85814
->>>>>>> working
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: cull_summary.Rdata|in_summary.Rdata|mainPlot.png|output_summary.Rdata|sims.Rdata|zoomPlot.png

@@ -448,7 +448,7 @@ goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
     
     data_sims <- res_sim(params, dat=dat, past=past)       ## POINT PREDICTION WITH UPPER/LOWER
     
-    Npred <- data_sims$y_mn                                ## SO Npred is y_mn; which is the GMSE PROJECTION?
+    Npred <- data_sims$y_mn                                ## SO Npred is y_mn; which is the GMSE PROJECTION
     
     Npred_lo <- data_sims$y_lo[length(data_sims$y_lo)]
     Npred_hi <- data_sims$y_hi[length(data_sims$y_hi)]

@@ -1,0 +1,9 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$$N_{t+1} = \left[ r_{max} N_t (a\times AR_t+b\times AT_t+ c\times IT_t+ d\times AIG_{t-1}) \times \left( 1- \frac{N_t}{k_0 + k\times AIG_t} \right) \right ] + N_t - e \times N_t$$

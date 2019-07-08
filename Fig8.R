@@ -43,12 +43,14 @@ f8dat <- as.data.frame(matrix(unlist(temp), ncol=3, byrow=T))
 names(f8dat) <- c('Npred_mn','Npred_lo','Npred_hi')
 f8dat$hb <- hb_range
 
-tiff('Figure8.tiff')
+tiff('Figure8.tiff', width=600, height=600, pointsize=18)
 plot(f8dat$hb, f8dat$Npred_mn, ylim=c(15000, 45000), type='n', xlab = 'Maximum cull level in year t', 
-     ylab = 'Estimated population size at start of year t+1')
+     ylab = 'Estimated population size at start of year t+1', xaxt='n')
 polygon(c(f8dat$hb, rev(f8dat$hb)), c(f8dat$Npred_hi, rev(f8dat$Npred_lo)),
         col = "lightgrey", border = NA) 
 lines(f8dat$hb, f8dat$Npred_mn, lwd=2)
+axis(1, at= seq(0,20000,2500), labels = seq(0,20000,2500))
+
 abline(h=goose_data[goose_data$Year=='2015','Count'],col='blue',lty='dashed',lwd=1)
 abline(h=manage_target,col='red',lty='dashed',lwd=1)
 

@@ -3,13 +3,12 @@ library(foreach)
 
 source('ggmse_default_test_pars.R')
 
-cl <- parallel::makeForkCluster(8)
+cl <- parallel::makeForkCluster(8, outfile="log.txt")
 doParallel::registerDoParallel(cl)
-
 
 system.time({
   goose_multidata <- foreach(i=1:iterations) %dopar% {
-    
+    cat(sprintf("Iteration %d\n", i))
     gmse_goose(data_file = data_file,
                obs_error = obs_error,
                years = proj_yrs,
@@ -20,6 +19,8 @@ system.time({
 })
 # user  system elapsed 
 # 0.319   0.401  75.560 (10 sims, 10 years)
+# 0.268   0.109  45.403   (10 sims, 10 years)
+# 0.624   1.296 195.418 (50 sims, 10 years)
 
 # system.time({
 #   for(i in 1:iterations) {
@@ -34,6 +35,7 @@ system.time({
 # }) 
 #user  system elapsed 
 #224.124  68.514 169.981  (10 sims, 10 years)
+
 
 goose_data <- goose_clean_data(file = data_file)
 last_year  <- goose_data[dim(goose_data)[1], 1]

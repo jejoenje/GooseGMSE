@@ -1,7 +1,7 @@
 source('ggmse_default_test_pars.R')
 
 for(i in 1:iterations) {
-
+  print(paste("Iteration",i))
   goose_multidata[[i]] <- gmse_goose(data_file = data_file,
                                      obs_error = obs_error,
                                      years = proj_yrs,

@@ -16,9 +16,6 @@ max_HB <- input$maxHB_in
 data_file <- as.vector(input$input_name$datapath)
 obs_error = 1438.614
 
-
-
-
 plot = TRUE
 past = FALSE
 
@@ -28,21 +25,21 @@ extinct = FALSE
 
 prev_params <- NULL
 
-load('Example_sims_1000.Rdata')
+load('Example_sims_1000_20190704.Rdata')
 
 goose_multidata <- NULL
 
 system.time({
   for(i in 1:iterations){
-
+    
     years <- proj_yrs
-
+    prev_params <- NULL
     print(paste('Iteration', i, 'year', years))
-
+    
     goose_data <- goose_clean_data(file = data_file)
-
+    
     last_year  <- goose_data[dim(goose_data)[1], 1]
-
+    
     gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod,
                              obs_mod = goose_gmse_obsmod,
                              man_mod = goose_gmse_manmod,
@@ -51,20 +48,20 @@ system.time({
                              manage_target = manage_target, max_HB = max_HB,
                              use_est = 0, stakeholders = 1,
                              get_res = "full")
-
+    
     goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                  goose_data = goose_data)
-
+    
     goose_data$Npred_mn[nrow(goose_data)] <- Npred_mn
     goose_data$Npred_lo[nrow(goose_data)] <- Npred_lo
     goose_data$Npred_hi[nrow(goose_data)] <- Npred_hi
-
+    
     # Start 'while' loop
-
+    
     while(years > 1){
-
+      
       print(paste('Iteration', i, 'year', years-1))
-
+      
       if(goose_data$y[nrow(goose_data)]<1) {
         print('EXTINCTION')
         extinct <- TRUE
@@ -74,14 +71,14 @@ system.time({
         goose_data$Npred_lo[nrow(goose_data)] <- 0
         goose_data$Npred_hi[nrow(goose_data)] <- 0
       }
-
+      
       if(extinct==FALSE) {
-
+        
         goose_data$y[goose_data$y<0] <- 0
         goose_data$Npred_mn[goose_data$Npred_mn<0] <- 0
         #goose_data$Npred_lo[goose_data$Npred_lo<0] <- 0
         #goose_data$Npred_hi[goose_data$Npred_hi<0] <- 0
-
+        
         gmse_res_new   <- gmse_apply(res_mod = goose_gmse_popmod,
                                      obs_mod = goose_gmse_obsmod,
                                      man_mod = goose_gmse_manmod,
@@ -90,20 +87,20 @@ system.time({
                                      manage_target = manage_target, use_est = 0 ,
                                      max_HB = max_HB, obs_error = obs_error,
                                      stakeholders = 1, get_res = "full");
-
+        
         gmse_res   <- gmse_res_new;
-
+        
         goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                      goose_data = goose_data);
-
+        
         goose_data$Npred_mn[nrow(goose_data)] <- Npred_mn
         goose_data$Npred_lo[nrow(goose_data)] <- Npred_lo
         goose_data$Npred_hi[nrow(goose_data)] <- Npred_hi
-
+        
       } else {
         cur_yr <- goose_data$Year[length(goose_data$Year)]
         rem_yrs <- (last_year+proj_yrs)-cur_yr
-
+        
         adds <- data.frame(Year=(cur_yr+1):(cur_yr+rem_yrs),
                            November=NA,
                            December=NA,
@@ -119,7 +116,6 @@ system.time({
                            AugRain=NA,
                            AugTemp=NA,
                            y=0,
-                           AIG.sc=NA,
                            HB=NA,
                            gmse_pop=NA,
                            Npred_mn=0,
@@ -129,14 +125,15 @@ system.time({
         goose_data <- rbind(goose_data, adds)
         years <- 1
       }
-
+      
       years <- years - 1
     }
     goose_multidata[[i]] <- goose_data
     rm(goose_data)
   }
-
-})   ### Started 10:27
+  save(goose_multidata, file='paste0("Example_sims_1000_", format(Sys.time(),"%Y%m%d%H%M%S"),".Rdata")')
+  
+})
 
 
 Fig6 <- function() {
@@ -158,8 +155,8 @@ Fig6 <- function() {
     out_lo <- rbind(out_lo, goose_multidata[[i]]$Npred_lo)
     out_hi <- rbind(out_hi, goose_multidata[[i]]$Npred_hi)
   }
-  out_lo_mn <- as.vector(apply(out_lo, 2, mean))
-  out_hi_mn <- as.vector(apply(out_hi, 2, mean))
+  out_lo_mn <- as.vector(apply(out_lo, 2, median))
+  out_hi_mn <- as.vector(apply(out_hi, 2, median))
   out_lo <- as.vector(apply(out_lo, 2, min))
   out_hi <- as.vector(apply(out_hi, 2, max))
   
@@ -168,16 +165,16 @@ Fig6 <- function() {
   lines(goose_multidata[[1]]$Year, out_lo, lty='dotted')
   lines(goose_multidata[[1]]$Year, out_hi, lty='dotted')
   
+  # Add dashed line between the last measured and first predicted year:
+  lines(c(last_year, last_year+1), 
+        c(goose_multidata[[1]]$Count[goose_multidata[[1]]$Year==last_year],
+          goose_multidata[[1]]$Count[goose_multidata[[1]]$Year==last_year+1]), lty='dashed')
+  
   abline(h=manage_target, col='darkgrey', lty='dashed')
   
   text(x=goose_multidata[[1]]$Year[length(goose_multidata[[1]]$Year)]-6, y=50000, 'Projected', pos=4)
   text(x=goose_multidata[[1]]$Year[1], y=50000, 'Observed', pos=4)
 }
-
-tiff('Figure6.tiff')
-Fig6()
-dev.off()
-
 
 Fig7 <- function() {
   past_years <- goose_multidata[[1]]$Year<=last_year
@@ -206,12 +203,25 @@ Fig7 <- function() {
   lines(goose_multidata[[1]]$Year, out_lo, lty='dotted')
   lines(goose_multidata[[1]]$Year, out_hi, lty='dotted')
   
+  # Add dashed line between the last measured and first predicted year:
+  lines(c(last_year, last_year+1), 
+        c(goose_multidata[[1]]$Count[goose_multidata[[1]]$Year==last_year],
+          goose_multidata[[1]]$Count[goose_multidata[[1]]$Year==last_year+1]), lty='dashed')
+  
   abline(h=manage_target, col='darkgrey', lty='dashed')
   
   text(x=goose_multidata[[1]]$Year[length(goose_multidata[[1]]$Year)]-6, y=50000, 'Projected', pos=4)
   text(x=goose_multidata[[1]]$Year[1], y=50000, 'Observed', pos=4)
 }
 
+tiff('Figure6.tiff')
+Fig6()
+dev.off()
+
 tiff('Figure7.tiff')
 Fig7()
 dev.off()
+
+los <- unlist(lapply(goose_multidata, function(x) min(x$Npred_lo, na.rm=T)))
+goose_multidata[[which(los==min(los))]] <- NULL
+

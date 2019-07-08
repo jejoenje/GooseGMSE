@@ -6,7 +6,7 @@ library(scales)
 
 input <- list(input_name=data.frame(
   datapath=as.vector('~/example_data_UPDATED_April2019.csv')),
-  sims_in=10, yrs_in=10, maxHB_in=2500, target_in=29000)
+  sims_in=1, yrs_in=10, maxHB_in=2500, target_in=29000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in
 years <- input$yrs_in
@@ -22,8 +22,6 @@ past = FALSE
 resamp = TRUE
 extinct = FALSE  
 prev_params <- NULL
-
-
 
 #load('Example_sims_1000.Rdata')
 

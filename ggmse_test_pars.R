@@ -17,7 +17,7 @@ data_file <- as.vector(input$input_name$datapath)
 obs_error = 1438.614
 
 plot = FALSE
-past = FALSE
+past = TRUE
 
 resamp = TRUE
 extinct = FALSE  

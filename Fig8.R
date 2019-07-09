@@ -8,7 +8,7 @@ hb_range <- seq(0, 20000, 1000)
 
 input <- list(input_name=data.frame(
   datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/example_data_UPDATED_April2019.csv')),
-  sims_in=1, yrs_in=1, maxHB_in=hb_range[1], target_in=29000)
+  sims_in=5, yrs_in=3, maxHB_in=hb_range[1], target_in=29000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in
 years <- input$yrs_in
@@ -27,18 +27,28 @@ extinct = FALSE
 
 prev_params <- NULL
 
-goose_multidata <- NULL
+goose_multidata2 <- NULL
+
 
 for (i in 1:length(hb_range)) {
-  goose_multidata[[i]] <- gmse_goose(data_file = data_file,
-                                     obs_error = obs_error,
-                                     years = proj_yrs,
-                                     manage_target = manage_target,
-                                     max_HB = hb_range[[i]], plot = FALSE,
-                                     use_est = 0)
+  prev_params <- NULL
+  goose_multidata <- NULL
+    for(j in 1:iterations) {
+    prev_params <- NULL
+    goose_multidata[[j]] <- gmse_goose(data_file = data_file,
+                                       obs_error = obs_error,
+                                       years = proj_yrs,
+                                       manage_target = manage_target,
+                                       max_HB = hb_range[[i]], plot = FALSE,
+                                       use_est = 0)
+    
+  }
+  goose_multidata2[[i]] <- data.frame(Npred_mn = unlist(lapply(goose_multidata, function(x) tail(x$Npred_mn,1))), 
+                                 Npred_lo = unlist(lapply(goose_multidata, function(x) tail(x$Npred_lo,1))),
+                                 Npred_hi = unlist(lapply(goose_multidata, function(x) tail(x$Npred_hi,1))))
 }
 
-temp <-lapply(goose_multidata, function(x) tail(x[,c('Npred_mn','Npred_lo','Npred_hi')],1))
+temp <- lapply(goose_multidata2, function(x) c(mean(x$Npred_mn), mean(x$Npred_lo), mean(x$Npred_hi)))
 f8dat <- as.data.frame(matrix(unlist(temp), ncol=3, byrow=T))
 names(f8dat) <- c('Npred_mn','Npred_lo','Npred_hi')
 f8dat$hb <- hb_range

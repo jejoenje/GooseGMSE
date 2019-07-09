@@ -181,7 +181,7 @@ goose_clean_data <- function(file){
 goose_growth <- function(para, dat) {
   data_rows <- dim(dat)[1];
   N_pred <- goose_pred(para = para, dat = dat);
-  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))
+  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))               # Source of the warnings
 }
 
 
@@ -271,6 +271,7 @@ get_goose_paras <- function(dat, init_params = NULL){
   ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
   dat$y <- floor(dat$y)
   #dat$y[dat$y<0] <- 0
+  
   contr_paras    <- list(trace = 1, maxit = 500);
   # get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, method='L-BFGS-B', control = contr_paras,
   #                         hessian = TRUE);
@@ -661,8 +662,6 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   # goose_data$Npred_lo <- NA
   # goose_data$Npred_hi <- NA
   
-  print('check 1')
-  
   gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod, 
                            obs_mod = goose_gmse_obsmod,
                            man_mod = goose_gmse_manmod,
@@ -671,8 +670,6 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
                            manage_target = manage_target, max_HB = max_HB,
                            use_est = 0, stakeholders = 1, 
                            get_res = "full")
-  
-  print('check 2')
   
   goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                goose_data = goose_data)

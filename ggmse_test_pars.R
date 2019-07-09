@@ -18,7 +18,6 @@ obs_error = 1438.614
 
 plot = FALSE
 past = TRUE
-
 resamp = TRUE
 extinct = FALSE  
 prev_params <- NULL

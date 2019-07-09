@@ -164,29 +164,114 @@ goose_clean_data <- function(file){
   #  culled on G'land and Icelan#d (HB) is always at least the number available for 
   #  one of them (i.e. avoid NA's in a sum including NA's):
   
-  data$IcelandCull[is.na(data$IcelandCull)] <- 0
-  data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
+  #data$IcelandCull[is.na(data$IcelandCull)] <- 0
+  #data$GreenlandCull[is.na(data$GreenlandCull)] <- 0
   data$HB <- data$IcelandCull+data$GreenlandCull
-  #data$HB[data$HB==0] <- NA
+  data$HB[data$HB==0] <- NA
   #data$IcelandCull[data$IcelandCull==0] <- NA
   #data$GreenlandCull[data$GreenlandCull==0] <- NA
   
   return(data);
 }  
 
-
+# get_parameters <- function(para, data){
+#   
+#   ### goose_growth()
+#   ### OLD FUNCTION VERSION - HERE JUST FOR REFERENCE
+#   ### Takes fitted model parameters and data as arguments.
+#   ###  - Calculates prediction using goose population model (goose_pred()) and returns 
+#   ###    measure of model fit (sum of squared deviations).
+#   ###  - Used in model fitting (optimisation) function
+#   
+#     data_rows <- dim(data)[1];
+#     N_pred <- goose_pred(para = para, data = data);
+#   
+#     DEV    <- N_pred[3:data_rows] - data$y[3:data_rows];
+#     sq_Dev <- DEV * DEV;
+#     pr_sum <- sum( sq_Dev / N_pred[3:data_rows] );
+#     SS_tot <- (1 / pr_sum) * 1000;   # Total sum of squares, scaled for convenience
+#     return(SS_tot);
+# }
 
 ### This is a start at an alternative for goose_growth(),
 ###  this one maximising (Poisson) likelihood instead.
 goose_growth <- function(para, dat) {
   data_rows <- dim(dat)[1];
   N_pred <- goose_pred(para = para, dat = dat);
-  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))               # Source of the warnings
+  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))
 }
 
+### This is a start at an alternative for goose_growth(),
+###  this one maximising (Poisson) likelihood instead.
+## RETURNS NEGATIVE LOG LIKELIHOOD  - for mle2()
+goose_growth_mle <- function(b1, b2, b3, b4, b5, b6, dat=goose_data) {
+  data_rows <- dim(dat)[1];
+  N_pred <- goose_pred_mle(b1=b1, b2=b2, b3=b3, b4=b4, b5=b5, b6=b6, dat = dat);
+  return(-sum(dpois(dat$y, N_pred, log=T),na.rm=T))
+}
+
+# Parameterisation of goose_pred() to work with bbmle::mle2()
+goose_pred_mle <- function(b1, b2, b3, b4, b5, b6, dat){  
+  
+  ### goose_pred()
+  ### 
+  ### MAIN POPULATION MODEL PREDICTION FUNCTION
+  ###
+  ### Takes optimised parameters and data as input
+  ###  - Extract input parameters from para vector.
+  ###  - Produce a prediction for each line in the data, given environmental variables.
+  ###  - Returns vector of predictions.
+  
+  r_val        <- b1             # Maximum growth rate
+  K_val        <- b2              # Carrying capacity
+  G_rain_coeff <- b3              # Effect of precipitation on Greenland in August
+  G_temp_coeff <- b4              # Effect of temperature on Greenland in August
+  I_temp_coeff <- b5              # Effect of temperature on Islay the previous winter
+  AIG_2_yrs    <- b6              # Effect of area of improved grassland 2 years prior
+  
+  # Make as many predictions as there are lines in data:
+  data_rows <- nrow(dat)
+  N_pred    <- rep(NA, data_rows)
+  
+  # Starting at year 3 (we need data from at least 2 years ago), run through each input line.
+  for(time in 3:data_rows){
+    # Reproduction rate is max growth rate times previous years' population size
+    goose_repr   <- r_val * dat$y[time - 1];
+    # Goose density/carrying capacity term is function of numbers in previous year, K and AIG
+    goose_dens   <- 1 - (dat$y[time -1] / (K_val * dat$AIG[time - 1]));
+    # 'Current' population (previous year)
+    goose_now    <- dat$y[time - 1];
+    # Effect of rainfall in Greenland in previous year
+    G_rain_adj   <- G_rain_coeff * dat$AugRain[time - 1];
+    # Effect of temperature of Greenland in previous year
+    G_temp_adj   <- G_temp_coeff * dat$AugTemp[time - 1];
+    # Effect of temperature on Islay in previous year
+    I_temp_adj   <- I_temp_coeff * dat$IslayTemp[time - 1];
+    # Effect of AIG on Islay in the year before last
+    AIG_2_adj    <- AIG_2_yrs    * dat$AIG.sc[time - 2];
+    # Sum the combined effect of above effects for convenience
+    adjusted     <- G_rain_adj + G_temp_adj + I_temp_adj + AIG_2_adj
+    # Next years' population size is reproduction rate times the density term, adjusted by 
+    #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
+    #  as the mean of the previous years' take there.
+    N_pred[time] <- goose_repr * (goose_dens + adjusted) + goose_now - mean(dat$HB/dat$y, na.rm=T)    
+    
+    ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
+    ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
+    ### data$HB for the input file is the sum of the numbers culled on G'land and Iceland (treating 
+    ###  an NA in one or the other as a zero but keeps NA if both values are NA.
+    ### By substracting mean(data$HB/data$y) here, the number removed due to culling in G'land and Iceland 
+    ###  becomes a 'running mean' (i.e. changed as new data become available) and will be sampled 
+    ###  from randomly for future projections.
+  }
+  
+  N_pred <- floor(N_pred)
+  
+  return(N_pred)
+}
 
 ## Parameterisation of goose_pred() to work with optim()
-goose_pred <- function(para, dat, kzero=673){  
+goose_pred <- function(para, dat, kzero=673, e=0.044){  
   ### goose_pred()
   ### 
   ### MAIN POPULATION MODEL PREDICTION FUNCTION
@@ -203,6 +288,7 @@ goose_pred <- function(para, dat, kzero=673){
   G_temp_coeff <- para[4]              # Effect of temperature on Greenland in August
   I_temp_coeff <- para[5]              # Effect of temperature on Islay the previous winter
   AIG_2_yrs    <- para[6]              # Effect of area of improved grassland 2 years prior
+  Add_cull     <- e
   
   
   # Make as many predictions as there are lines in data:
@@ -230,7 +316,7 @@ goose_pred <- function(para, dat, kzero=673){
     # Next years' population size is reproduction rate times the density term, adjusted by 
     #  environmental effects, minus the number taken on Greenland and Iceland, which is taken 
     #  as the mean of the previous years' take there.
-    N_pred[time] <- ((goose_repr * adjusted * goose_dens) + goose_now) - mean(dat$HB/dat$y, na.rm=T)    
+    N_pred[time] <- ((goose_repr * adjusted * goose_dens) + goose_now) - Add_cull*goose_now    
     
     ### So, the prediction N_pred[time] here is the projected population size on Islay AFTER 
     ###   culling on G'land and Iceland, but EXCLUDING anything 'to be' culled on Islay at [time].
@@ -271,7 +357,6 @@ get_goose_paras <- function(dat, init_params = NULL){
   ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
   dat$y <- floor(dat$y)
   #dat$y[dat$y<0] <- 0
-  
   contr_paras    <- list(trace = 1, maxit = 500);
   # get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, method='L-BFGS-B', control = contr_paras,
   #                         hessian = TRUE);
@@ -317,7 +402,7 @@ res_sim <- function(pars, dat, past=FALSE, reps=1000) {
   datr[[length(datr)]] <- NULL  # Remove the reps + 1 (because we started with one)
   
   pred_with_new <- function(z) {
-    goose_pred(ER(pars$par,ses), z, kzero=k0_ER())
+    goose_pred(ER(pars$par,ses), z, kzero=k0_ER(), e=cull_ER()) 
   }
   res_sim_list <- mclapply(datr, pred_with_new, mc.cores = 8)
   
@@ -602,7 +687,8 @@ count_ER <- function(rep=1){
 # Sample Iceland/Greenland cull error
 cull_ER <- function(rep=1){
   x <- rnorm(rep,0.044,0.015)
-  x
+  x[x<0] <- 0
+  return(x)
 }
 
 # Sample error around K0
@@ -614,7 +700,7 @@ k0_ER <- function(){
 ### Function to generate new data using error resampling of y and HB
 y_HB_ER <- function(dat) {
   dat$y <- dat$y+count_ER(nrow(dat))
-  dat$HB <- dat$HB*cull_ER(nrow(dat))
+  #dat$HB <- dat$HB*cull_ER(nrow(dat))
   return(dat)
 }
 
@@ -662,6 +748,8 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   # goose_data$Npred_lo <- NA
   # goose_data$Npred_hi <- NA
   
+  print('check 1')
+  
   gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod, 
                            obs_mod = goose_gmse_obsmod,
                            man_mod = goose_gmse_manmod,
@@ -670,6 +758,8 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
                            manage_target = manage_target, max_HB = max_HB,
                            use_est = 0, stakeholders = 1, 
                            get_res = "full")
+  
+  print('check 2')
   
   goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                goose_data = goose_data)

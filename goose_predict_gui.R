@@ -282,14 +282,15 @@ goose_pred <- function(para, dat, kzero=673, e=0.044){
   ###  - Returns vector of predictions.
   
   r_val        <- para[1]              # Maximum growth rate
-  K_z          <- kzero
-  K_val        <- para[2]              # Carrying capacity
+  K_z          <- kzero                # "Baseline" carrying capacity, i.e. when AIG=0
+                                       #  (constant but sampled from error distribution when resampling/projecting)
+  K_val        <- para[2]              # Effect of AIG on carrying capacity
   G_rain_coeff <- para[3]              # Effect of precipitation on Greenland in August
   G_temp_coeff <- para[4]              # Effect of temperature on Greenland in August
   I_temp_coeff <- para[5]              # Effect of temperature on Islay the previous winter
   AIG_2_yrs    <- para[6]              # Effect of area of improved grassland 2 years prior
-  Add_cull     <- e
-  
+  Add_cull     <- e                    # Proportion removed through shooting in Iceland and Greenland
+                                       #  (constant but sampled from error distribution when resampling/projecting)
   
   # Make as many predictions as there are lines in data:
   data_rows <- length(dat[,1])
@@ -720,6 +721,9 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   
   # -- Initialise ------------------------------------------------------------
   
+  # Set a counter, this is for convenience/output printing only
+  year_counter <- 1
+  
   proj_yrs   <- years
   
   goose_data <- goose_clean_data(file = data_file)
@@ -745,7 +749,7 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   # goose_data$Npred_lo <- NA
   # goose_data$Npred_hi <- NA
   
-  print('check 1')
+  #print(paste('Year',year_counter))
   
   gmse_res   <- gmse_apply(res_mod = goose_gmse_popmod, 
                            obs_mod = goose_gmse_obsmod,
@@ -755,8 +759,6 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
                            manage_target = manage_target, max_HB = max_HB,
                            use_est = 0, stakeholders = 1, 
                            get_res = "full")
-  
-  print('check 2')
   
   goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                goose_data = goose_data)
@@ -770,6 +772,9 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   # Start 'while' loop
   
   while(years > 1){
+    
+    year_counter <- year_counter+1
+    #print(paste('Year',year_counter))
     
     if(goose_data$y[nrow(goose_data)]<1) {
       print('EXTINCTION')

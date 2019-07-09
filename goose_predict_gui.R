@@ -424,7 +424,7 @@ res_sim <- function(pars, dat, past=FALSE, reps=1000) {
 
 
 goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
-                            plot = TRUE, resamp = TRUE, prev_params = prev_params) {
+                            plot = TRUE, resamp = TRUE) {
   
   ### goose_plot_pred()
   ###
@@ -434,9 +434,7 @@ goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
   ### - May produce a plot of predictions if requested (plot= argument)
   ### - Returns vector of population predictions (Npred)  
   
-  params <- get_goose_paras(dat, init_params=prev_params);
-  prev_params <- params$par
-  assign("prev_params", prev_params, envir = globalenv())
+  params <- get_goose_paras(dat);
   
   if (resamp == FALSE) {
     Npred  <- goose_pred(para = params$par, dat = dat);    ## POINT PREDICTION ONLY 
@@ -492,7 +490,7 @@ goose_gmse_popmod <- function(dat){
   ###    population model prediction.
   ### - Returns a single new population projection for a following year.
   
-  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = resamp, prev_params = prev_params);
+  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = resamp);
   N_pred <- floor(N_pred)
   N_last <- length(N_pred);
   New_N  <- as.numeric(N_pred[N_last]);
@@ -742,7 +740,6 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   assign("max_HB", max_HB, envir = globalenv() )
   assign("obs_error", obs_error, envir = globalenv() )
   assign("use_est", use_est, envir = globalenv() )
-  assign("prev_params", prev_params, envir = globalenv() )
   
   # goose_data$Npred_mn <- NA
   # goose_data$Npred_lo <- NA
@@ -788,8 +785,8 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
     
     if(extinct==FALSE) {
       
-      goose_data$y[goose_data$y<0] <- 0
-      goose_data$Npred_mn[goose_data$Npred_mn<0] <- 0
+      #goose_data$y[goose_data$y<0] <- 0
+      #goose_data$Npred_mn[goose_data$Npred_mn<0] <- 0
       #goose_data$Npred_lo[goose_data$Npred_lo<0] <- 0
       #goose_data$Npred_hi[goose_data$Npred_hi<0] <- 0
       

@@ -8,7 +8,7 @@ hb_range <- seq(0, 20000, 1000)
 
 input <- list(input_name=data.frame(
   datapath=as.vector('~/Dropbox/Islay_goose_data_from_Tom_Jan_2018/Dataset/example_data_UPDATED_April2019.csv')),
-  sims_in=5, yrs_in=3, maxHB_in=hb_range[1], target_in=29000)
+  sims_in=1, yrs_in=1, maxHB_in=hb_range[1], target_in=29000)
 input$input_name$datapath <- as.vector(input$input_name$datapath)
 iterations <- input$sims_in
 years <- input$yrs_in

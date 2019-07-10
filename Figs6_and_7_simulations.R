@@ -1,6 +1,6 @@
 ### 200 runs of 10:
 
-for(z in 1:200) {
+for(z in 1:10) {
   source('ggmse_default_test_pars.R')
   
   ### Non-parallel version of the below:

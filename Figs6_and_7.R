@@ -7,20 +7,33 @@ last_year <- tail(goose_data$Year, 1)
 
 library(scales)
 
-### Combine output files into single structure:
+### To re-load (new) simulation data only:
 
-out_files <- list.files('out')
-out_files <- c(out_files, "text.txt")
-sim_files <- out_files[grepl('.Rdata', out_files)]
-sims <- list()
-for(i in 1:length(sim_files)) {
-  load(paste0("out/",sim_files[i]))
-  sims[[i]] <- goose_multidata
-}
-goose_multidata <- list()
-for(i in 1:length(sim_files)) {
-  goose_multidata <- c(goose_multidata, sims[[i]])  
-}
+### Combine output files into single structure:
+# out_files <- list.files('out')
+# out_files <- c(out_files, "text.txt")
+# sim_files <- out_files[grepl('.Rdata', out_files)]
+# sims <- list()
+# for(i in 1:length(sim_files)) {
+#   load(paste0("out/",sim_files[i]))
+#   sims[[i]] <- goose_multidata
+# }
+# goose_multidata <- list()
+# for(i in 1:length(sim_files)) {
+#   goose_multidata <- c(goose_multidata, sims[[i]])  
+# }
+# los <- unlist(lapply(goose_multidata, function(x) min(x$Npred_lo, na.rm=T)))
+# goose_multidata[[which(los==min(los))]] <- NULL
+# length(goose_multidata)   # Simulation "sample" size
+# ### Remove "Extra" simulations:
+# goose_multidata <- goose_multidata[-sample(1:length(goose_multidata),
+#                                            length(goose_multidata)-1000, 
+#                                            replace=F)]
+# length(goose_multidata)   # Simulation "sample" size
+# 
+# save(goose_multidata, file='Fig6_and_7_data.Rdata')
+
+load('Fig6_and_7_data.Rdata')
 
 Fig6 <- function() {
   past_years <- goose_multidata[[1]]$Year<=last_year
@@ -105,6 +118,6 @@ Fig6()
 #dev.off()
 
 #tiff('Figure7.tiff', width=800, height=800, pointsize=22)
-Fig7()
+#Fig7()
 #dev.off()
 

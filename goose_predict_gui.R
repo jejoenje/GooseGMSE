@@ -358,12 +358,18 @@ get_goose_paras <- function(dat, init_params = NULL){
   ## Note I'm currently not using any of the control pars; didn't seem to be necessary for now...
   dat$y <- floor(dat$y)
   #dat$y[dat$y<0] <- 0
-  contr_paras    <- list(trace = 1, maxit = 500);
-  # get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, method='L-BFGS-B', control = contr_paras,
-  #                         hessian = TRUE);
   
-  get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, 
+  contr_paras    <- list(trace = 0, maxit = 1000, factr = 1e-6,
+                       pgtol = 0);
+
+  ### This was working but throwing some errors:  
+  # get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat, method = "BFGS",
+  #                         hessian = TRUE);
+
+  get_parameters <- optim(par = init_params, fn = goose_growth, dat = dat,
+                          method = "L-BFGS-B", control = contr_paras,
                           hessian = TRUE);
+
   
   ### ALTERNATIVE:
   #bbmle::mle2(goose_growth_mle, start=test2, optimizer='nlminb')
@@ -771,6 +777,8 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   
   # Start 'while' loop
   
+  cat('.')
+  
   while(years > 1){
     
     year_counter <- year_counter+1
@@ -846,6 +854,7 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
     }
     
     years <- years - 1
+    cat('.')
   }
   
   #years <- proj_yrs

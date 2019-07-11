@@ -870,15 +870,21 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
   
   goose_multidata <- NULL
   
-  for(i in 1:iterations){
-    
-    goose_multidata[[i]] <- gmse_goose(data_file = data_file,
-                                       obs_error = obs_error,
-                                       years = proj_yrs,
-                                       manage_target = manage_target,
-                                       max_HB = max_HB, plot = FALSE,
-                                       use_est = 0)
+  cl <- parallel::makeForkCluster(8, outfile="out/cl_log.txt")
+  doParallel::registerDoParallel(cl)
+  
+  goose_multidata <- foreach(i=1:iterations) %dopar% {
+    cat(sprintf("%s: Iteration %d\n", as.character(Sys.time()), i))
+    years <- proj_yrs
+    gmse_goose(data_file = data_file,
+               obs_error = obs_error,
+               years = proj_yrs,
+               manage_target = manage_target,
+               max_HB = max_HB, plot = FALSE,
+               use_est = 0)
   }
+  stopCluster(cl)
+  gc()
   
   # Need next two lines for getting correct 'last_year' value when running foreach for above loop, unsure why.
   goose_data <- goose_clean_data(file = data_file)  

@@ -20,20 +20,20 @@ library(scales)
 # }
 # goose_multidata <- list()
 # for(i in 1:length(sim_files)) {
-#   goose_multidata <- c(goose_multidata, sims[[i]])  
+#   goose_multidata <- c(goose_multidata, sims[[i]])
 # }
-# los <- unlist(lapply(goose_multidata, function(x) min(x$Npred_lo, na.rm=T)))
-# goose_multidata[[which(los==min(los))]] <- NULL
+# # los <- unlist(lapply(goose_multidata, function(x) min(x$Npred_lo, na.rm=T)))
+# # goose_multidata[[which(los==min(los))]] <- NULL
 # length(goose_multidata)   # Simulation "sample" size
 # ### Remove "Extra" simulations:
 # goose_multidata <- goose_multidata[-sample(1:length(goose_multidata),
-#                                            length(goose_multidata)-1000, 
+#                                            length(goose_multidata)-1000,
 #                                            replace=F)]
 # length(goose_multidata)   # Simulation "sample" size
-# 
-# save(goose_multidata, file='Fig6_and_7_data.Rdata')
 
-load('Fig6_and_7_data.Rdata')
+#save(goose_multidata, file='Fig7_and_8_data.Rdata')
+
+#load('Fig7_and_8_data.Rdata')
 
 Fig6 <- function() {
   past_years <- goose_multidata[[1]]$Year<=last_year
@@ -118,6 +118,6 @@ Fig6()
 #dev.off()
 
 #tiff('Figure7.tiff', width=800, height=800, pointsize=22)
-#Fig7()
+Fig7()
 #dev.off()
 

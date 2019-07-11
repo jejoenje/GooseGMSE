@@ -1,6 +1,6 @@
 ### 200 runs of 10:
 
-for(z in 1:10) {
+for(z in 1:100) {
   source('ggmse_default_test_pars.R')
   
   ### Non-parallel version of the below:
@@ -19,7 +19,7 @@ for(z in 1:10) {
   #   
   # })
   
-  cl <- parallel::makeForkCluster(4, outfile="out/cl_log.txt")
+  cl <- parallel::makeForkCluster(8, outfile="out/cl_log.txt")
   doParallel::registerDoParallel(cl)
   
   system.time({

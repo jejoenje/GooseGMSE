@@ -1,0 +1,308 @@
+starting worker pid=12574 on localhost:11005 at 10:51:32.465
+starting worker pid=12575 on localhost:11005 at 10:51:32.476
+starting worker pid=12576 on localhost:11005 at 10:51:32.486
+starting worker pid=12577 on localhost:11005 at 10:51:32.496
+2019-07-10 10:51:33: Iteration 1
+2019-07-10 10:51:33: Iteration 2
+2019-07-10 10:51:33: Iteration 3
+2019-07-10 10:51:33: Iteration 4
+2019-07-10 10:51:50: Iteration 5
+2019-07-10 10:51:50: Iteration 6
+2019-07-10 10:51:50: Iteration 7
+2019-07-10 10:51:50: Iteration 8
+2019-07-10 10:52:09: Iteration 9
+2019-07-10 10:52:09: Iteration 10
+starting worker pid=13505 on localhost:11005 at 10:52:26.794
+starting worker pid=13506 on localhost:11005 at 10:52:26.805
+starting worker pid=13507 on localhost:11005 at 10:52:26.815
+starting worker pid=13508 on localhost:11005 at 10:52:26.826
+2019-07-10 10:52:27: Iteration 1
+2019-07-10 10:52:27: Iteration 2
+2019-07-10 10:52:27: Iteration 3
+2019-07-10 10:52:27: Iteration 4
+2019-07-10 10:52:46: Iteration 5
+2019-07-10 10:52:46: Iteration 6
+2019-07-10 10:52:47: Iteration 7
+2019-07-10 10:52:47: Iteration 8
+2019-07-10 10:53:06: Iteration 9
+2019-07-10 10:53:06: Iteration 10
+starting worker pid=14467 on localhost:11005 at 10:53:23.155
+starting worker pid=14468 on localhost:11005 at 10:53:23.165
+starting worker pid=14469 on localhost:11005 at 10:53:23.176
+starting worker pid=14470 on localhost:11005 at 10:53:23.188
+2019-07-10 10:53:24: Iteration 1
+2019-07-10 10:53:24: Iteration 2
+2019-07-10 10:53:24: Iteration 3
+2019-07-10 10:53:24: Iteration 4
+2019-07-10 10:53:43: Iteration 5
+2019-07-10 10:53:43: Iteration 6
+2019-07-10 10:53:43: Iteration 7
+2019-07-10 10:53:43: Iteration 8
+2019-07-10 10:54:02: Iteration 9
+2019-07-10 10:54:03: Iteration 10
+starting worker pid=15437 on localhost:11005 at 10:54:20.540
+starting worker pid=15439 on localhost:11005 at 10:54:20.558
+starting worker pid=15440 on localhost:11005 at 10:54:20.570
+starting worker pid=15441 on localhost:11005 at 10:54:20.583
+2019-07-10 10:54:21: Iteration 1
+2019-07-10 10:54:21: Iteration 2
+2019-07-10 10:54:21: Iteration 4
+2019-07-10 10:54:21: Iteration 3
+2019-07-10 10:54:39: Iteration 5
+2019-07-10 10:54:40: Iteration 6
+2019-07-10 10:54:40: Iteration 7
+2019-07-10 10:54:40: Iteration 8
+2019-07-10 10:54:57: Iteration 9
+2019-07-10 10:54:57: Iteration 10
+starting worker pid=16320 on localhost:11005 at 10:55:12.534
+starting worker pid=16321 on localhost:11005 at 10:55:12.544
+starting worker pid=16322 on localhost:11005 at 10:55:12.555
+starting worker pid=16324 on localhost:11005 at 10:55:12.566
+2019-07-10 10:55:13: Iteration 1
+2019-07-10 10:55:13: Iteration 3
+2019-07-10 10:55:13: Iteration 2
+2019-07-10 10:55:13: Iteration 4
+2019-07-10 10:55:31: Iteration 5
+2019-07-10 10:55:32: Iteration 6
+2019-07-10 10:55:32: Iteration 7
+2019-07-10 10:55:32: Iteration 8
+2019-07-10 10:55:54: Iteration 9
+2019-07-10 10:55:54: Iteration 10
+starting worker pid=17345 on localhost:11005 at 10:56:10.709
+starting worker pid=17346 on localhost:11005 at 10:56:10.719
+starting worker pid=17347 on localhost:11005 at 10:56:10.731
+starting worker pid=17348 on localhost:11005 at 10:56:10.747
+2019-07-10 10:56:11: Iteration 1
+2019-07-10 10:56:11: Iteration 2
+2019-07-10 10:56:11: Iteration 3
+2019-07-10 10:56:11: Iteration 4
+2019-07-10 10:56:32: Iteration 5
+2019-07-10 10:56:33: Iteration 6
+2019-07-10 10:56:34: Iteration 7
+2019-07-10 10:56:34: Iteration 8
+2019-07-10 10:56:51: Iteration 9
+2019-07-10 10:56:52: Iteration 10
+starting worker pid=18336 on localhost:11005 at 10:57:08.436
+starting worker pid=18337 on localhost:11005 at 10:57:08.446
+starting worker pid=18338 on localhost:11005 at 10:57:08.457
+starting worker pid=18339 on localhost:11005 at 10:57:08.468
+2019-07-10 10:57:09: Iteration 1
+2019-07-10 10:57:09: Iteration 2
+2019-07-10 10:57:09: Iteration 3
+2019-07-10 10:57:09: Iteration 4
+2019-07-10 10:57:26: Iteration 5
+2019-07-10 10:57:27: Iteration 6
+2019-07-10 10:57:27: Iteration 7
+2019-07-10 10:57:28: Iteration 8
+2019-07-10 10:57:50: Iteration 9
+2019-07-10 10:57:51: Iteration 10
+starting worker pid=19340 on localhost:11005 at 10:58:10.257
+starting worker pid=19341 on localhost:11005 at 10:58:10.267
+starting worker pid=19342 on localhost:11005 at 10:58:10.279
+starting worker pid=19343 on localhost:11005 at 10:58:10.291
+2019-07-10 10:58:11: Iteration 1
+2019-07-10 10:58:11: Iteration 2
+2019-07-10 10:58:11: Iteration 3
+2019-07-10 10:58:11: Iteration 4
+2019-07-10 10:58:29: Iteration 5
+2019-07-10 10:58:30: Iteration 6
+2019-07-10 10:58:30: Iteration 7
+2019-07-10 10:58:30: Iteration 8
+2019-07-10 10:58:49: Iteration 9
+2019-07-10 10:58:49: Iteration 10
+starting worker pid=20220 on localhost:11005 at 10:59:05.093
+starting worker pid=20221 on localhost:11005 at 10:59:05.104
+starting worker pid=20222 on localhost:11005 at 10:59:05.114
+starting worker pid=20223 on localhost:11005 at 10:59:05.125
+2019-07-10 10:59:05: Iteration 1
+2019-07-10 10:59:05: Iteration 2
+2019-07-10 10:59:05: Iteration 3
+2019-07-10 10:59:05: Iteration 4
+2019-07-10 10:59:24: Iteration 5
+2019-07-10 10:59:25: Iteration 6
+2019-07-10 10:59:25: Iteration 7
+2019-07-10 10:59:25: Iteration 8
+2019-07-10 10:59:43: Iteration 9
+2019-07-10 10:59:44: Iteration 10
+starting worker pid=21117 on localhost:11005 at 11:00:00.264
+starting worker pid=21118 on localhost:11005 at 11:00:00.276
+starting worker pid=21119 on localhost:11005 at 11:00:00.287
+starting worker pid=21120 on localhost:11005 at 11:00:00.300
+2019-07-10 11:00:00: Iteration 1
+2019-07-10 11:00:00: Iteration 2
+2019-07-10 11:00:00: Iteration 3
+2019-07-10 11:00:00: Iteration 4
+2019-07-10 11:00:20: Iteration 5
+2019-07-10 11:00:20: Iteration 6
+2019-07-10 11:00:20: Iteration 7
+2019-07-10 11:00:21: Iteration 8
+2019-07-10 11:00:39: Iteration 9
+2019-07-10 11:00:40: Iteration 10
+starting worker pid=22021 on localhost:11005 at 11:00:58.174
+starting worker pid=22022 on localhost:11005 at 11:00:58.185
+starting worker pid=22023 on localhost:11005 at 11:00:58.196
+starting worker pid=22024 on localhost:11005 at 11:00:58.208
+2019-07-10 11:00:58: Iteration 1
+2019-07-10 11:00:58: Iteration 2
+2019-07-10 11:00:58: Iteration 4
+2019-07-10 11:00:58: Iteration 3
+2019-07-10 11:01:18: Iteration 5
+2019-07-10 11:01:18: Iteration 6
+2019-07-10 11:01:19: Iteration 7
+2019-07-10 11:01:19: Iteration 8
+2019-07-10 11:01:38: Iteration 9
+2019-07-10 11:01:38: Iteration 10
+starting worker pid=22897 on localhost:11005 at 11:01:55.806
+starting worker pid=22898 on localhost:11005 at 11:01:55.816
+starting worker pid=22899 on localhost:11005 at 11:01:55.828
+starting worker pid=22900 on localhost:11005 at 11:01:55.839
+2019-07-10 11:01:56: Iteration 1
+2019-07-10 11:01:56: Iteration 2
+2019-07-10 11:01:56: Iteration 3
+2019-07-10 11:01:56: Iteration 4
+2019-07-10 11:02:16: Iteration 5
+2019-07-10 11:02:17: Iteration 6
+2019-07-10 11:02:17: Iteration 7
+2019-07-10 11:02:18: Iteration 8
+2019-07-10 11:02:38: Iteration 9
+2019-07-10 11:02:39: Iteration 10
+starting worker pid=23857 on localhost:11005 at 11:02:56.442
+starting worker pid=23858 on localhost:11005 at 11:02:56.453
+starting worker pid=23859 on localhost:11005 at 11:02:56.465
+starting worker pid=23860 on localhost:11005 at 11:02:56.476
+2019-07-10 11:02:57: Iteration 1
+2019-07-10 11:02:57: Iteration 2
+2019-07-10 11:02:57: Iteration 3
+2019-07-10 11:02:57: Iteration 4
+2019-07-10 11:03:18: Iteration 5
+2019-07-10 11:03:18: Iteration 6
+2019-07-10 11:03:19: Iteration 7
+2019-07-10 11:03:19: Iteration 8
+2019-07-10 11:03:36: Iteration 9
+2019-07-10 11:03:37: Iteration 10
+starting worker pid=24855 on localhost:11005 at 11:03:53.251
+starting worker pid=24856 on localhost:11005 at 11:03:53.262
+starting worker pid=24857 on localhost:11005 at 11:03:53.273
+starting worker pid=24858 on localhost:11005 at 11:03:53.285
+2019-07-10 11:03:53: Iteration 1
+2019-07-10 11:03:53: Iteration 2
+2019-07-10 11:03:53: Iteration 3
+2019-07-10 11:03:53: Iteration 4
+2019-07-10 11:04:14: Iteration 5
+2019-07-10 11:04:15: Iteration 6
+2019-07-10 11:04:15: Iteration 7
+2019-07-10 11:04:15: Iteration 8
+2019-07-10 11:04:35: Iteration 9
+2019-07-10 11:04:36: Iteration 10
+starting worker pid=25829 on localhost:11005 at 11:04:54.217
+starting worker pid=25830 on localhost:11005 at 11:04:54.237
+starting worker pid=25831 on localhost:11005 at 11:04:54.260
+starting worker pid=25836 on localhost:11005 at 11:04:54.340
+2019-07-10 11:04:55: Iteration 1
+2019-07-10 11:04:55: Iteration 2
+2019-07-10 11:04:55: Iteration 3
+2019-07-10 11:04:55: Iteration 4
+2019-07-10 11:05:15: Iteration 5
+2019-07-10 11:05:15: Iteration 6
+2019-07-10 11:05:16: Iteration 7
+2019-07-10 11:05:17: Iteration 8
+2019-07-10 11:05:36: Iteration 9
+2019-07-10 11:05:37: Iteration 10
+starting worker pid=26699 on localhost:11005 at 11:05:53.991
+starting worker pid=26700 on localhost:11005 at 11:05:54.001
+starting worker pid=26701 on localhost:11005 at 11:05:54.011
+starting worker pid=26702 on localhost:11005 at 11:05:54.022
+2019-07-10 11:05:54: Iteration 2
+2019-07-10 11:05:54: Iteration 1
+2019-07-10 11:05:54: Iteration 3
+2019-07-10 11:05:54: Iteration 4
+2019-07-10 11:06:12: Iteration 5
+2019-07-10 11:06:13: Iteration 6
+2019-07-10 11:06:13: Iteration 7
+2019-07-10 11:06:13: Iteration 8
+2019-07-10 11:06:31: Iteration 9
+2019-07-10 11:06:31: Iteration 10
+starting worker pid=27855 on localhost:11005 at 11:13:03.638
+starting worker pid=27856 on localhost:11005 at 11:13:03.671
+starting worker pid=27857 on localhost:11005 at 11:13:03.704
+starting worker pid=27858 on localhost:11005 at 11:13:03.729
+2019-07-10 11:13:04: Iteration 2
+2019-07-10 11:13:04: Iteration 1
+2019-07-10 11:13:04: Iteration 3
+2019-07-10 11:13:04: Iteration 4
+2019-07-10 11:13:26: Iteration 5
+2019-07-10 11:13:26: Iteration 6
+2019-07-10 11:13:26: Iteration 7
+2019-07-10 11:13:27: Iteration 8
+2019-07-10 11:13:46: Iteration 9
+2019-07-10 11:13:47: Iteration 10
+starting worker pid=28770 on localhost:11005 at 11:14:03.962
+starting worker pid=28771 on localhost:11005 at 11:14:03.973
+starting worker pid=28772 on localhost:11005 at 11:14:03.984
+starting worker pid=28773 on localhost:11005 at 11:14:03.995
+2019-07-10 11:14:04: Iteration 1
+2019-07-10 11:14:04: Iteration 2
+2019-07-10 11:14:04: Iteration 3
+2019-07-10 11:14:04: Iteration 4
+2019-07-10 11:14:22: Iteration 5
+2019-07-10 11:14:22: Iteration 6
+2019-07-10 11:14:22: Iteration 7
+2019-07-10 11:14:22: Iteration 8
+2019-07-10 11:14:40: Iteration 9
+2019-07-10 11:14:40: Iteration 10
+starting worker pid=29693 on localhost:11005 at 11:14:56.503
+starting worker pid=29694 on localhost:11005 at 11:14:56.514
+starting worker pid=29695 on localhost:11005 at 11:14:56.525
+starting worker pid=29696 on localhost:11005 at 11:14:56.537
+2019-07-10 11:14:57: Iteration 2
+2019-07-10 11:14:57: Iteration 1
+2019-07-10 11:14:57: Iteration 3
+2019-07-10 11:14:57: Iteration 4
+2019-07-10 11:15:16: Iteration 5
+2019-07-10 11:15:16: Iteration 6
+2019-07-10 11:15:16: Iteration 7
+2019-07-10 11:15:17: Iteration 8
+2019-07-10 11:15:34: Iteration 9
+2019-07-10 11:15:35: Iteration 10
+starting worker pid=30570 on localhost:11005 at 11:15:50.668
+starting worker pid=30571 on localhost:11005 at 11:15:50.679
+starting worker pid=30572 on localhost:11005 at 11:15:50.690
+starting worker pid=30573 on localhost:11005 at 11:15:50.701
+2019-07-10 11:15:51: Iteration 1
+2019-07-10 11:15:51: Iteration 2
+2019-07-10 11:15:51: Iteration 3
+2019-07-10 11:15:51: Iteration 4
+2019-07-10 11:16:09: Iteration 5
+2019-07-10 11:16:09: Iteration 6
+2019-07-10 11:16:10: Iteration 7
+2019-07-10 11:16:11: Iteration 8
+2019-07-10 11:16:26: Iteration 9
+2019-07-10 11:16:28: Iteration 10
+starting worker pid=31445 on localhost:11005 at 11:16:43.914
+starting worker pid=31446 on localhost:11005 at 11:16:43.925
+starting worker pid=31447 on localhost:11005 at 11:16:43.937
+starting worker pid=31448 on localhost:11005 at 11:16:43.950
+2019-07-10 11:16:44: Iteration 1
+2019-07-10 11:16:44: Iteration 2
+2019-07-10 11:16:44: Iteration 3
+2019-07-10 11:16:44: Iteration 4
+2019-07-10 11:17:02: Iteration 5
+2019-07-10 11:17:02: Iteration 6
+2019-07-10 11:17:03: Iteration 7
+2019-07-10 11:17:03: Iteration 8
+2019-07-10 11:17:21: Iteration 9
+2019-07-10 11:17:22: Iteration 10
+starting worker pid=32336 on localhost:11005 at 11:17:38.665
+starting worker pid=32337 on localhost:11005 at 11:17:38.676
+starting worker pid=32338 on localhost:11005 at 11:17:38.688
+starting worker pid=32339 on localhost:11005 at 11:17:38.698
+2019-07-10 11:17:39: Iteration 1
+2019-07-10 11:17:39: Iteration 2
+2019-07-10 11:17:39: Iteration 3
+2019-07-10 11:17:39: Iteration 4
+2019-07-10 11:17:58: Iteration 5
+2019-07-10 11:17:58: Iteration 6
+2019-07-10 11:17:59: Iteration 7
+2019-07-10 11:17:59: Iteration 8
+2019-07-10 11:18:08: Iteration 9
+2019-07-10 11:18:16: Iteration 10

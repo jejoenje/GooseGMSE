@@ -14,7 +14,7 @@ proj_yrs <- years
 manage_target <- input$target_in
 max_HB <- input$maxHB_in
 data_file <- as.vector(input$input_name$datapath)
-obs_error = 1438.614
+obs_error = 2846/sqrt(5)
 
 plot = FALSE
 past = FALSE

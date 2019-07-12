@@ -180,12 +180,12 @@ ui <- fluidPage(
                     paste("Generated on", Sys.time()),
                     br(),
                     h3("Output"),
-                    plotOutput('plot', height='500px'),
+                    plotOutput('plot', height='600px', width='800px'),
                     htmlOutput('text_summary'),
                     h3("Input parameters"),
                     br(),
                     dataTableOutput('in_summary'),
-                  br(),
+                    br(),
                     br(),
                     h4("Numbers culled per projected year"),
                     dataTableOutput('out_culls'),
@@ -203,16 +203,20 @@ ui <- fluidPage(
 
 
 server <- function(session, input, output) {
-
-  ### Switch to main output tab when run button is pressed
+  
+  # "Output" tab is hidden initially
+  hideTab(inputId = "inTabset", target = "out_tab")
+  
+  ### Show main output tab when run button is pressed
   observeEvent(input$run_in, {
-     updateTabsetPanel(session=session, inputId="inTabset", selected="out_tab")
+      showTab(inputId = "inTabset", target = "out_tab")
+      updateTabsetPanel(session=session, inputId="inTabset", selected="out_tab") 
     })
 
   ### calcPlot() runs when run button is pressed.
   ### Runs main simulations (gmse_goose_multiplot() given input variables)
   calcPlot <- eventReactive(input$run_in, {
-
+    
     validate(
         need(try(input$input_name), "Please select a base data input file first.")
     )
@@ -249,15 +253,19 @@ server <- function(session, input, output) {
 
     save(input_list, file='input.Rdata')
     save(sims, file='sims.Rdata')
+    
+    updateTabsetPanel(session=session, inputId="inTabset", selected="out_tab")
+    
   })
   
   ### genSummaryText() runs when run button is pressed.
   ### Generates summary output text from simulations.
   genSummaryText <- eventReactive(input$run_in, { 
     if(!exists("sims")) {
-        div(
-            "Please load a base data file (see 'Help' for more info)"
-        )
+        # div(
+        #     span("Please load a base data file (see 'Help' for more info)", style = "color:red")
+        # )
+      showNotification("Please load a base data file (see 'Help' for more info)")
     } else {
         output_summary <- genSummary()
         print(output_summary)
@@ -270,18 +278,19 @@ server <- function(session, input, output) {
   ### cullTable() runs when calcPlot() has been run.
   ### Generates summary table of mean population estimates and mean numbers culled (across simulations)
   cullTable <- eventReactive(input$run_in, {
-    validate(need(try(input$input_name), ""))
-     
-    #updateTabsetPanel(session=session, inputId="inTabset", selected="out_tab2") 
 
+    validate(need(try(input$input_name), ""))
+    
+    #updateTabsetPanel(session=session, inputId="inTabset", selected="out_tab2") 
+    
     res <- gmse_goose_summarise(sims, input)
-        
+    
     cull_summary <- cbind( (res$last_obs_yr+1):(res$end_yr) ,
-                               floor(res$proj_y_mn),
-                               floor(res$mean_HB),
-                               floor(res$sd_HB),
-                               floor(res$min_HB),
-                               floor(res$max_HB))
+                           floor(res$proj_y_mn),
+                           floor(res$mean_HB),
+                           floor(res$sd_HB),
+                           floor(res$min_HB),
+                           floor(res$max_HB))
     cull_summary <- as.data.frame(cull_summary)
     save(cull_summary, file='cull_summary.Rdata')
     coln <- c('Year','Projected mean populaton size','Mean culled','SD culled','Min. culled','Max. culled')
@@ -290,13 +299,14 @@ server <- function(session, input, output) {
   })
   
   inTable <- eventReactive(input$run_in, {
-      validate(need(try(input$input_name), ""))
-      
-      in_summary <- genInputSummary()
-      save(in_summary, file='in_summary.Rdata')
-      
-      datatable(in_summary, colnames=names(in_summary), rownames=FALSE, options = list(dom = 't'))
-      
+
+    validate(need(try(input$input_name), ""))
+    
+    in_summary <- genInputSummary()
+    save(in_summary, file='in_summary.Rdata')
+    
+    datatable(in_summary, colnames=names(in_summary), rownames=FALSE, options = list(dom = 't'))
+    
   })
   
   origTable <- eventReactive(input$run_in, {
@@ -314,7 +324,7 @@ server <- function(session, input, output) {
   
   output$plot <- renderPlot({
     calcPlot()
-  })
+  }, res = 100)
   
   output$text_summary <- renderPrint({
     genSummaryText()

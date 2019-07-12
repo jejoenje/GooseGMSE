@@ -52,7 +52,7 @@ cull_table_format <- htmltools::withTags(table(
 ui <- fluidPage(
   
   titlePanel(
-      "Goose-GMSE (v. 1.2.1, July 2019)", windowTitle = "Goose-GMSE"
+      "Goose-GMSE (v. 1.2.2, July 2019)", windowTitle = "Goose-GMSE"
   ),
   
   sidebarLayout(

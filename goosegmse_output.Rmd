@@ -3,7 +3,7 @@ title: "Goose-GMSE Simulation summary"
 author: ''
 date: "Generated on `r Sys.time()`"
 output:
-  pdf_document: default
+  html_document: default
 always_allow_html: yes
 ---
 
@@ -11,6 +11,7 @@ always_allow_html: yes
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 #library(kableExtra)
+#library(tidyverse)
 library(markdown)
 source('goose_predict_gui.R')
 load('input.Rdata')
@@ -26,13 +27,13 @@ load('cull_summary.Rdata')
 #kable(in_summary, booktabs = T) %>% kable_styling(full_width = F)
 #kable(in_summary, booktabs = T, full_width=F)
 kable(in_summary, full_width=F)
-
+#kable(in_summary)
 ```
 
 ## Output
 ```{r output1,  out.width = '80%'}
 include_graphics('./mainPlot.png')
-include_graphics('./zoomPlot.png')
+#include_graphics('./zoomPlot.png')
 ```
 
 ```{r output2}
@@ -42,7 +43,8 @@ output_summary[[3]][[1]]
 ## Numbers culled per projected year
 ```{r culled}
 names(cull_summary) <- c('Year','Mean projected pop. size','Mean no. culled','SD culled','Min. culled','Max. culled')
-kable(cull_summary, booktabs = T, full_width = F)
+#kable(cull_summary, booktabs = T, full_width = F)
+kable(cull_summary, full_width = FALSE)
 ```
 
 <!-- ## Original data -->

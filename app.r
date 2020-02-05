@@ -52,7 +52,7 @@ cull_table_format <- htmltools::withTags(table(
 ui <- fluidPage(
   
   titlePanel(
-      "Goose-GMSE (v. 1.2.2, July 2019)", windowTitle = "Goose-GMSE"
+      "Goose-GMSE (v. 1.2.3, Feb 2020)", windowTitle = "Goose-GMSE"
   ),
   
   sidebarLayout(
@@ -124,25 +124,42 @@ ui <- fluidPage(
 
         tabPanel(title = "Help", value = "help_tab", 
                  h3("Extra help for running Goose-GMSE simulations"),
-                 br(), 
+                 br(),
+                 p(strong("Methodology")),
+                 p("This model is a user interface to the model presented in", 
+                   a("SNH Research Report 1039 - Development of a population model tool to predict shooting levels of Greenland barnacle geese on Islay", 
+                     href="https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland"), 
+                   ". Please refer to this report for full details on the background, model and the methods used. The information provided here focuses only 
+                   on the use of the interface itself and details relevant to that."),
                  p(strong("Input file requirements")),
                  p("A base data (input) file", strong("must"), "be loaded and formatted correctly.", br(),
                    "This file must be in .csv, .xls or .xlsx  format only. Its content must be layed out as the", em("example_data.csv file"), 
                    "and must be in order of year (first column). Projections of future years are taken from the last year (last line) in 
-                   the data file, and the user is expected to add new data as this becomes available. It is expected that all data
-                   for all years is available (i.e. all rows are complete).", br(),
+                   the data file, and the user is expected to add new data as this becomes available.", br(),
+                   "Although it is expected that all data for all years is available (i.e. all rows are complete), missing 
+                   values are allowed for some columns. Please refer to the ", 
+                   a("report", href="https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland"),
+                   " for further details on how missing values are interpreted and handled (e.g. missing data are assumed to be equal to prior means, etc.).", br(),
+                   span("Note that whole blank lines are not allowed in the input file, and that any missing values in .xls or .xlsx input files have to be 
+                        kept blank, and should not contain 'NA' text. The latter point does not apply to .csv input files; in this case, NA text values 
+                        will be correctly interpreted as missing.", style = "color:red"), br(),
                    tags$ul(
-                       tags$li("Column 1 ('Year'): year in four-digit format."),
-                       tags$li("Column 2 ('Count'): the average over-winter count of geese on Islay (e.g. October-March)"),
-                       tags$li("Column 3 ('IcelandCull'): the number of geese culled on Iceland in the month prior to the current winter."),
-                       tags$li("Column 4 ('IslayCull'): the number of geese culled on Islay over winter."),
-                       tags$li("Column 5 ('GreenlandCull'): the number of geese culled on Greenland in the month prior to the current winter."),
-                       tags$li("Column 6 ('AIG'): the area of improved grassland in hectares available on Islay."),
-                       tags$li("Column 7 ('IslayTemp'): the average temperature (degrees C) on Islay in the preceding winter."),
-                       tags$li("Column 8 ('AugRain'): average rainfall (mm) in Greenland during the preceding August."),
-                       tags$li("Column 9 ('AugTemp'): temperature (degrees C) in Greenland during the preceding August.")
+                       tags$li("Column 1 ('Year'): ",span("REQUIRED. ", style = "color:red"),"Year in four-digit format."),
+                       tags$li("Column 2 ('November'): the average count of geese on Islay in November (if available)"),
+                       tags$li("Column 3 ('December'): the average count of geese on Islay in December (if available)"),
+                       tags$li("Column 4 ('January'): the average count of geese on Islay in January (if available)"),
+                       tags$li("Column 5 ('February'): the average count of geese on Islay in February (if available)"),
+                       tags$li("Column 6 ('March'): the average count of geese on Islay in March (if available)"),
+                       tags$li("Column 7 ('Count'): ",span("REQUIRED. ", style = "color:red"),"The average over-winter count of geese on Islay (e.g. October-March). If monthly counts are included (columns 2-6), this figure needs to be equal to the average of those columns."),
+                       tags$li("Column 8 ('IcelandCull'): the number of geese culled on Iceland in the month prior to the current winter."),
+                       tags$li("Column 9 ('IslayCull'): ",span("REQUIRED. ", style = "color:red"),"The number of geese culled on Islay over winter."),
+                       tags$li("Column 10 ('GreenlandCull'): the number of geese culled on Greenland in the month prior to the current winter."),
+                       tags$li("Column 11 ('AIG'): the area of improved grassland in hectares available on Islay. See notes below on details of issues with measurement, etc."),
+                       tags$li("Column 12 ('IslayTemp'): the average temperature (degrees C) on Islay in the preceding winter."),
+                       tags$li("Column 13 ('AugRain'): average rainfall (mm) in Greenland during the preceding August."),
+                       tags$li("Column 14 ('AugTemp'): temperature (degrees C) in Greenland during the preceding August.")
                    ),
-                   em("Please note that any deviations from the above format may cause the model not to run properly and/or projections to be unreliable.")
+                   span("Please note that any deviations from the above format may cause the model not to run properly and/or projections to be unreliable.", style = "color:red;font-weight:bold")
                    ),
                  p(strong("Interpretation of output")),
                  tags$ul(
@@ -162,12 +179,13 @@ ui <- fluidPage(
                  tags$ul(
                      tags$li(strong("Number of years projected."), "Because of the various sources of uncertainty included in the model (see above and the report),
                              it is important to note that it should be assumed that uncertainty is going to be greater further in the future. For example, the 
-                             model currently makes the very simplistic assumption that future climatic conditions will vary randomly within the range measured to 
-                             date. In other words, no systematic climate change and how this may affect population dynamics is taken account of.", br(),
+                             model currently makes the very simplistic assumption that climatic conditions will change according to linear trends in the future, 
+                             with trend parameters and error estimated from input data. Further details of this can be found in the accompanying ",
+                             a("report", href="https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland"), ".", br(),
                              "Thus, it is best to concentrate interpretation on 1-2 years in the future. Moreover, it is very important that simulations are re-
                              run as more data becomes available)."),
                      tags$li(strong("Max. cull per year."), "It is very important to note that this parameter represent the maximum number culled only and is not
-                             a soecific recommendation (it is set by the user). The actual number of individuals culled in each year projected may be lower than 
+                             a specific recommendation (i.e. it is set by the user of the model). The actual number of individuals culled in each year projected may be lower than 
                              this and the mean, variation and range of this across simulations is provided in the output table. In some cases (e.g. when the population 
                              size exceeds the population target by a large amount), it is likely that the number culled simply equals the maximum.", 
                              strong(" Note that this reflects a situation when there is no error in the number actually culled (e.g. marksmen are able to hit 

@@ -235,6 +235,9 @@ server <- function(session, input, output) {
   ### Runs main simulations (gmse_goose_multiplot() given input variables)
   calcPlot <- eventReactive(input$run_in, {
     
+    ### Clears any existing output files from working directory
+    clearExistingOutput()
+    
     validate(
         need(try(input$input_name), "Please select a base data input file first.")
     )
@@ -246,7 +249,7 @@ server <- function(session, input, output) {
     progress <- shiny::Progress$new(session = session, min = 0, max = input$sims_in*(input$yrs_in+1))
     on.exit(progress$close())
     assign("progress", progress, envir = globalenv())
-    
+      
     progress$set(message = "Running simulations...", value = 0)
 
     # This runs the simulations using the input vals and plots the main output graph:    
@@ -363,7 +366,7 @@ server <- function(session, input, output) {
   output$report <- downloadHandler(
       # For PDF output, change this to "report.pdf"
       filename = "report.html",
-      content = function(file) {
+      content = function(file = filename) {
           # Copy the report file to a temporary directory before processing it, in
           # case we don't have write permissions to the current working dir (which
           # can happen when deployed).

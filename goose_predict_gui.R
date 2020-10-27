@@ -453,7 +453,7 @@ goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
     
   } else {
     
-    data_sims <- res_sim(params, dat=dat, past=past)       ## POINT PREDICTION WITH UPPER/LOWER
+    data_sims <- res_sim(params, dat=dat, past=FALSE)       ## POINT PREDICTION WITH UPPER/LOWER
     
     Npred <- data_sims$y_mn                                ## SO Npred is y_mn; which is the GMSE PROJECTION
     
@@ -497,7 +497,7 @@ goose_gmse_popmod <- function(dat){
   ###    population model prediction.
   ### - Returns a single new population projection for a following year.
   
-  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = resamp);
+  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = TRUE);
   N_pred <- floor(N_pred)
   N_last <- length(N_pred);
   New_N  <- as.numeric(N_pred[N_last]);
@@ -545,7 +545,7 @@ goose_gmse_manmod <- function(observation_vector, manage_target){
   return(manager_vector);
 }
 
-goose_gmse_usrmod <- function(manager_vector, max_HB){
+goose_gmse_usrmod <- function(manager_vector, max_HB = max_HB){
   
   ### goose_gmse_usrmod()
   ###
@@ -746,10 +746,10 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   #     use_est <- 1
   # }
   
-  assign("target", manage_target, envir = globalenv() )
-  assign("max_HB", max_HB, envir = globalenv() )
-  assign("obs_error", obs_error, envir = globalenv() )
-  assign("use_est", use_est, envir = globalenv() )
+  assign("manage_target", manage_target, envir = .GlobalEnv )
+  assign("max_HB", max_HB, envir = .GlobalEnv )
+  assign("obs_error", obs_error, envir = .GlobalEnv )
+  assign("use_est", use_est, envir = .GlobalEnv )
   
   # goose_data$Npred_mn <- NA
   # goose_data$Npred_lo <- NA
@@ -764,7 +764,7 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
                            dat = goose_data, obs_error = obs_error,
                            manage_target = manage_target, max_HB = max_HB,
                            use_est = 0, stakeholders = 1, 
-                           get_res = "full")
+                           get_res = "full", my_way_or_the_highway = TRUE)
   
   goose_data <- sim_goose_data(gmse_results = gmse_res$basic,
                                goose_data = goose_data)
@@ -779,6 +779,7 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
   
   cat('.')
   
+  extinct = FALSE
   while(years > 1){
     
     year_counter <- year_counter+1
@@ -810,7 +811,7 @@ gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error,
                                    dat = goose_data,
                                    manage_target = manage_target, use_est = 0 ,
                                    max_HB = max_HB, obs_error = obs_error,
-                                   stakeholders = 1, get_res = "full");
+                                   stakeholders = 1, get_res = "full", my_way_or_the_highway = TRUE);
       
       gmse_res   <- gmse_res_new;
       
@@ -1055,4 +1056,13 @@ genSummary <- function() {
       tags$li(p4, style = "color:red; font-weight: bold")
     )
   )
+}
+
+clearExistingOutput = function() {
+  if(file.exists("cull_summary.Rdata")) file.remove("cull_summary.Rdata")
+  if(file.exists("in_summary.Rdata")) file.remove("in_summary.Rdata")
+  if(file.exists("output_summary.Rdata")) file.remove("output_summary.Rdata")
+  if(file.exists("input.Rdata")) file.remove("input.Rdata")
+  if(file.exists("sims.Rdata")) file.remove("sims.Rdata")
+  if(file.exists("mainPlot.png")) file.remove("mainPlot.png")
 }

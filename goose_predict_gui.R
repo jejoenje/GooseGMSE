@@ -1066,3 +1066,5 @@ clearExistingOutput = function() {
   if(file.exists("sims.Rdata")) file.remove("sims.Rdata")
   if(file.exists("mainPlot.png")) file.remove("mainPlot.png")
 }
+
+

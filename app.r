@@ -12,7 +12,7 @@ source('goose_predict_gui.R')
 
 plot <- FALSE
 past <- FALSE
-resamp <- FALSE
+resamp <- TRUE
 extinct <- FALSE  
 prev_params <- NULL
 

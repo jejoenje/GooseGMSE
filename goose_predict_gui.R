@@ -60,17 +60,6 @@ load_input <- function(in_name) {
   
 }
 
-sample_noNA <- function(x) {
-  
-  ### sample_noNA()
-  ###
-  ### Helper function which randomly samples 1 value from vector x, 
-  ### ignoring any missing values in x.
-  
-  avail <- x[!is.na(x)]
-  sample(avail, 1)
-}
-
 # This is in response to reviewer comments. It first fits a linear model to
 # detect any trend in a particular variable over years, then samples from the
 # residuals of the model. The returned value preserves any linear trend with

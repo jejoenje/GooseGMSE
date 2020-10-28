@@ -386,7 +386,7 @@ get_goose_paras <- function(dat, init_params = NULL){
 }
 
 ### This is an attempt at a function that simulates from parameter distributions
-res_sim <- function(pars, dat, past=FALSE, reps=1000) {
+res_sim <- function(pars, dat, past=past, reps=1000) {
   
   #params <- pars$par
   ses <- SEfromHessian(pars$hessian)
@@ -431,7 +431,7 @@ res_sim <- function(pars, dat, past=FALSE, reps=1000) {
 
 
 goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
-                            plot = TRUE, resamp = TRUE) {
+                            plot = TRUE, resamp = resamp) {
   
   ### goose_plot_pred()
   ###
@@ -453,7 +453,7 @@ goose_plot_pred <- function(dat, year_start = 1987, ylim = c(10000, 60000),
     
   } else {
     
-    data_sims <- res_sim(params, dat=dat, past=FALSE)       ## POINT PREDICTION WITH UPPER/LOWER
+    data_sims <- res_sim(params, dat=dat, past=past)       ## POINT PREDICTION WITH UPPER/LOWER
     
     Npred <- data_sims$y_mn                                ## SO Npred is y_mn; which is the GMSE PROJECTION
     
@@ -497,7 +497,7 @@ goose_gmse_popmod <- function(dat){
   ###    population model prediction.
   ### - Returns a single new population projection for a following year.
   
-  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = TRUE);
+  N_pred <- goose_plot_pred(dat = dat, plot = FALSE, resamp = resamp);
   N_pred <- floor(N_pred)
   N_last <- length(N_pred);
   New_N  <- as.numeric(N_pred[N_last]);
@@ -680,7 +680,6 @@ sim_goose_data <- function(gmse_results, goose_data){
 }
 
 ##### Uncertainty simulations #####
-
 ### Functions for sampling error distributions
 
 # Sample error around count
@@ -720,13 +719,12 @@ ER <- function(paras,ses) {
   )
 }
 
+##### CORE SIMULATION FUNCTIONS #####
 
 gmse_goose <- function(data_file, manage_target, max_HB, years, obs_error, 
                        use_est = "normal",
                        plot = FALSE){
-  
-  # -- Initialise ------------------------------------------------------------
-  
+
   # Set a counter, this is for convenience/output printing only
   year_counter <- 1
   
@@ -899,35 +897,54 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
   
   
   
-  # Need next two lines for getting correct 'last_year' value when running foreach for above loop, unsure why.
+  # Need next two lines for getting correct 'last_year' value when running foreach for above loop
   goose_data <- goose_clean_data(file = data_file)  
   last_year  <- goose_data[dim(goose_data)[1], 1]
   
+  ### Sets up empty plot region:
   past_years <- goose_multidata[[1]]$Year<=last_year
   con_years <- goose_multidata[[1]]$Year==2015 | goose_multidata[[1]]$Year==2016
   plot(goose_multidata[[1]]$Year, goose_multidata[[1]]$y, type='n', ylim=c(0,50000), 
        xlab='Year', ylab='Estimated population size')
   rect(last_year+1, -10000, last_year+proj_yrs+5, 70000, border=NA, col='grey')
   box()
-  for(i in 1:length(goose_multidata)) {
-    lines(goose_multidata[[i]]$Year[!past_years], goose_multidata[[i]]$Npred_mn[!past_years], col = scales::alpha('black', 0.25))
+  
+  ### Plots projected trajectories:
+  # ... when resampling parameter distributions:
+  if(resamp == TRUE) {
+    for(i in 1:length(goose_multidata)) {
+      lines(goose_multidata[[i]]$Year[!past_years], 
+            goose_multidata[[i]]$Npred_mn[!past_years], col = scales::alpha('red', 0.5))
+    }
+    # This adds the upper and lower 95% quantiles as established from resampled parameter distributions:
+    out_lo <- as.data.frame(NULL)
+    out_hi <- as.data.frame(NULL)
+    for(i in 1:length(goose_multidata)) {
+      out_lo <- rbind(out_lo, goose_multidata[[i]]$Npred_lo)
+      out_hi <- rbind(out_hi, goose_multidata[[i]]$Npred_hi)
+    }
+    out_lo_mn <- as.vector(apply(out_lo, 2, mean))
+    out_hi_mn <- as.vector(apply(out_hi, 2, mean))
+    out_lo <- as.vector(apply(out_lo, 2, min))
+    out_hi <- as.vector(apply(out_hi, 2, max))
+    
+    lines(goose_multidata[[1]]$Year, out_lo, lty='dotted', col = scales::alpha('red', 0.5))
+    lines(goose_multidata[[1]]$Year, out_hi, lty='dotted', col = scales::alpha('red', 0.5))
+  }
+  # Plotting when not resampling from parameter distributions - only using the "point prediction" y:
+  if(resamp == FALSE) {
+    for(i in 1:length(goose_multidata)) {
+      lines(goose_multidata[[i]]$Year[!past_years], goose_multidata[[i]]$y[!past_years], col = scales::alpha('red', 0.5))
+    }
   }
   
+  ### Plots past numbers:
   lines(goose_multidata[[1]]$Year[past_years], goose_multidata[[1]]$Count[past_years], type='b', pch=21, col='black', bg='black')
   
-  out_lo <- as.data.frame(NULL)
-  out_hi <- as.data.frame(NULL)
-  for(i in 1:length(goose_multidata)) {
-    out_lo <- rbind(out_lo, goose_multidata[[i]]$Npred_lo)
-    out_hi <- rbind(out_hi, goose_multidata[[i]]$Npred_hi)
-  }
-  out_lo_mn <- as.vector(apply(out_lo, 2, mean))
-  out_hi_mn <- as.vector(apply(out_hi, 2, mean))
-  out_lo <- as.vector(apply(out_lo, 2, min))
-  out_hi <- as.vector(apply(out_hi, 2, max))
-  
-  lines(goose_multidata[[1]]$Year, out_lo, lty='dotted')
-  lines(goose_multidata[[1]]$Year, out_hi, lty='dotted')
+  ### "Link" last obs and first pred with a line:
+  last_obs = goose_multidata[[1]]$Count[goose_multidata[[1]]$Year==last_year]
+  first_pred = goose_multidata[[1]]$y[goose_multidata[[1]]$Year==last_year+1]
+  lines(c(last_year, last_year+1),c(last_obs,first_pred), col = scales::alpha('red', 0.5))
   
   abline(h=manage_target, col='darkgrey', lty='dashed')
   
@@ -940,44 +957,45 @@ gmse_goose_multiplot <- function(data_file, proj_yrs,
   return(goose_multidata)
 }
 
+# gmse_print_multiplot <- function(goose_multidata, manage_target, proj_yrs){
+#   iters      <- length(goose_multidata);
+#   rows       <- dim(goose_multidata[[1]])[1];
+#   goose_data <- goose_multidata[[1]];
+#   dat        <- goose_data;
+#   last_year  <- dat[dim(dat)[1], 1];
+#   yrs        <- dat[,1];
+#   NN         <- dat[,10];
+#   HB         <- dat[,3];
+#   pry        <- (last_year - proj_yrs):last_year;
+#   obsrvd     <- 1:(dim(dat)[1] - proj_yrs);
+#   
+#   par(mar = c(5, 5, 1, 1));
+#   
+#   yrs_plot <- which(yrs %in% pry[1]:last_year)
+#   
+#   png(file='zoomPlot.png',width=800, height=600)
+#   
+#   plot(x = yrs[yrs_plot], y = NN[yrs_plot], xlab = "Year", ylab = "Population size",
+#        cex = 1.25, pch = 20, type = "n", ylim = c(0, max(NN)), xaxt='n',
+#        cex.lab = 1.1, cex.axis = 1.1, lwd = 2);
+#   axis(1, at=yrs[yrs_plot], labels=yrs[yrs_plot])
+#   
+#   points(x = yrs[yrs_plot], y=NN[yrs_plot], cex = 1.25, pch = 20, type = "l")
+#   points(pry[1], NN[which(yrs==pry[1])], col='red', cex=1.5, pch=16)
+#   abline(h = manage_target, lwd = 0.8, lty = "dotted");
+#   
+#   for(i in 2:iters){
+#     goose_data <- goose_multidata[[i]];
+#     dat <- goose_data;
+#     NN  <- dat[yrs_plot,10];
+#     points(x = yrs[yrs_plot], y = NN, pch = 20, type = "l", lwd = 0.6);
+#   }
+#   
+#   dev.off()
+#   
+# }
 
-gmse_print_multiplot <- function(goose_multidata, manage_target, proj_yrs){
-  iters      <- length(goose_multidata);
-  rows       <- dim(goose_multidata[[1]])[1];
-  goose_data <- goose_multidata[[1]];
-  dat        <- goose_data;
-  last_year  <- dat[dim(dat)[1], 1];
-  yrs        <- dat[,1];
-  NN         <- dat[,10];
-  HB         <- dat[,3];
-  pry        <- (last_year - proj_yrs):last_year;
-  obsrvd     <- 1:(dim(dat)[1] - proj_yrs);
-  
-  par(mar = c(5, 5, 1, 1));
-  
-  yrs_plot <- which(yrs %in% pry[1]:last_year)
-  
-  png(file='zoomPlot.png',width=800, height=600)
-  
-  plot(x = yrs[yrs_plot], y = NN[yrs_plot], xlab = "Year", ylab = "Population size",
-       cex = 1.25, pch = 20, type = "n", ylim = c(0, max(NN)), xaxt='n',
-       cex.lab = 1.1, cex.axis = 1.1, lwd = 2);
-  axis(1, at=yrs[yrs_plot], labels=yrs[yrs_plot])
-  
-  points(x = yrs[yrs_plot], y=NN[yrs_plot], cex = 1.25, pch = 20, type = "l")
-  points(pry[1], NN[which(yrs==pry[1])], col='red', cex=1.5, pch=16)
-  abline(h = manage_target, lwd = 0.8, lty = "dotted");
-  
-  for(i in 2:iters){
-    goose_data <- goose_multidata[[i]];
-    dat <- goose_data;
-    NN  <- dat[yrs_plot,10];
-    points(x = yrs[yrs_plot], y = NN, pch = 20, type = "l", lwd = 0.6);
-  }
-  
-  dev.off()
-  
-}
+#### HELPER FUNCTIONS FOR SUMMARISING/DISPLAYING DATA ####
 
 gmse_goose_summarise <- function(multidat, input) {
   

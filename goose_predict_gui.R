@@ -1038,8 +1038,14 @@ gmse_goose_summarise <- function(multidat, input) {
 
 genInputSummary <- function() {
   data.frame(
-    Parameter=c("No. of simulations", "Number of years projected", "Maximum no. culled", "Population target"), 
-    Value=c(input$sims_in, input$yrs_in, input$maxHB_in, input$target_in)    
+    Parameter=c("No. of simulations", 
+                "Number of years projected", 
+                "Maximum no. culled", 
+                "Population target"), 
+    Value=c(input$sims_in, 
+            input$yrs_in, 
+            input$maxHB_in, 
+            input$target_in)    
   )
 }
 

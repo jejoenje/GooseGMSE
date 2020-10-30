@@ -1,0 +1,103 @@
+---
+output:
+  html_document: default
+---
+
+# Extra help for running Goose-GMSE simulations
+
+## Methodology
+
+This model is a user interface to the model presented in [SNH Research Report 1039](https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland). 
+Please refer to this report for full details on the background, model and the methods used. The information provided here 
+focuses only on the use of the interface itself and details relevant to that.  
+
+## Input file requirements
+
+Overall, the input file represents the latest observed data available, i.e. all goose counts, climate variables up to a 
+given September, with the model projecting a required number of years forward from the last year listed.  
+  
+<span style="color: red;">
+A "year" as referred to in the input data (i.e. a line in the input file) represents a winter, as opposed to a calendar 
+year. For example, __a line for year 2015 reflects winter 2015-16, i.e. November 2015 to March 2016 in terms of goose 
+counts on Islay__. Any reference to "the current year", "the current winter", or "given winter" in the following should 
+be interpreted as such. 
+Please also note the point about relevant Greenland climate values per line below.  
+Thus, for example, in September 2016 all values for the line 2015 (i.e. winter 2015-16) should be available, and model 
+runs project goose counts for winter 2016-17 onwards.  
+</span>
+
+- A base data (input) file __must__ be loaded and formatted correctly.   
+- The input file must be in .csv, .xls or .xlsx  format only.  
+- The input file content must be layed out as the _example_data.csv_ file, and must be in order of year (first column). 
+Years have to be sequential with no missing year values.
+- Note that whole blank lines are not allowed in the input file, and that any missing values in 
+.xls or .xlsx input files have to be kept blank, and should not contain 'NA' text. The latter point does not apply to 
+.csv input files; in this case, NA text values will be correctly interpreted as missing.
+- Projections for future years are taken from the last year (last line) in the data file, and the user is expected to add 
+new observed data as this becomes available.
+- Although it is expected that all data for all past/present years is available (i.e. all rows are complete), missing 
+values are allowed for some columns. Please refer to the [report](https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland) 
+for further details on how missing values are interpreted and handled (e.g. missing data are assumed to be equal to prior 
+means, etc.).  
+- <span style="color: red;">__NOTE: Greenland climate data, Iceland cull and Greenland cull numbers__. Because (as set 
+out above) a line in the input file refers to a given winter (Nov-Mar on Islay), and the model predicts the _following_ 
+winters, the values needed for both Greenland climate ("AugRain" and "AugTemp"), and those for numbers culled in both 
+Iceland and Greenland, are effectively those for the "following year", i.e. the summer months following the given year. 
+For example, for a line of observed data for __2013__, Greenland weather values should be those for __August 2014__, 
+and Iceland and Greenland cull numbers should be those for summer/autumn 2014.</span>
+
+The columns in the input file should be titled (first row only, with the name as specified under "Header" below) and 
+arranged as follows (note that any deviations from the above format may cause the model not to run properly and/or 
+projections to be unreliable):  
+
+| Column | Header   | Required     | Description |
+| :--- | :--------:    | :-------: | :-----------|
+| 1    | Year       | __YES__| Year in four-digit format. Has to be sequential over successive rows (no gaps).  Represents a winter (Nov-Mar in terms of geese on Islay), and is referred to below as the "given winter" (e.g. line marked 2015 refers to winter 2015-16).|
+| 2    | November   | No     | Monthly average goose count on Islay in given winter
+| 3    | December   | No     | Monthly average goose count on Islay in given winter
+| 4    | January    | No     | Monthly average goose count on Islay in given winter
+| 5    | February   | No     | Monthly average goose count on Islay in given winter
+| 6    | March      | No     | Monthly average goose count on Islay in given winter
+| 7    | Count      | __YES__|  The average over-winter count of geese on Islay (i.e. November-March). If monthly counts are included (columns 2-6), this figure needs to be equal to the average of those columns. 
+| 8    | IcelandCull| No     | The number of geese culled on Iceland __in the summer following the given winter__.
+| 9    | IslayCull  | __YES__| The number of geese culled on Islay in given winter.
+| 10   | GreenlandCull | No  | The number of geese culled on Greenland __in the summer following the given winter__.
+| 11   | AIG       | No  |  The area of improved grassland in hectares available on Islay in given winter.
+| 12   | IslayTemp | No  | The average temperature (degrees C) on Islay in given winter, calculated as the average over October to March inclusive, in given year.
+| 13   | AugRain   | No  | The average rainfall (mm) in Greenland __during the August following given winter__.
+| 14   | AugTemp   | No  | The temperature (degrees C) in Greenland __during the August following given winter__.
+
+## Interpretation of output
+
+### Uncertainty
+The output graph and summarised output are the result of simulations including observation uncertainty and some process 
+uncertainty regarding future environmental conditions. Thus, it should be noted that the output and any inferences from 
+them are inherently variable (i.e. contain a degree of uncertainty). Thus, any interpretation and recommendations 
+derived from this output should take account of this uncertainty: neither the projected population sizes nor the numbers 
+culled should be taken as an absolute recommendation for numbers to be culled.
+
+### Number of simulations
+In particular, the interpretation of the model output should take account of the number of simulations that was used to 
+produce the output: a lower number of simulations will limit the ability of the user to make fair judgements of the 
+likely variability in projected population sizes. To minimise processing time, we suggest that trial runs of the model 
+could be made with a small number of simulations, before a final run with a larger number of simulations (e.g 100), on 
+which inferences could be based.
+
+## Extra information on simulation parameters
+
+### Number of years projected
+Because of the various sources of uncertainty included in the model (see above and the report), it is important to note 
+that it should be assumed that uncertainty is going to be greater further in the future. For example, the model 
+currently makes the very simplistic assumption that climatic conditions will change according to linear trends in the 
+future, with trend parameters and error estimated from input data. Further details of this can be found in the 
+accompanying [report](https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland"), 
+Thus, it is best to concentrate interpretation on 1-2 years in the future. Moreover, it is very important that 
+simulations are re-run as more data becomes available).
+
+### Maximum cull per year
+It is very important to note that this parameter represent the maximum number culled only and is not a specific 
+recommendation (i.e. it is set by the user of the model). The actual number of individuals culled in each year 
+projected may be lower than this and the mean, variation and range of this across simulations is provided in the output 
+table. In some cases (e.g. when the population size exceeds the population target by a large amount), it is likely that 
+the number culled simply equals the maximum. __Note that this reflects a situation when there is no error in the number 
+actually culled (e.g. marksmen are able to hit their target exactly__.

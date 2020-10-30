@@ -1,0 +1,39 @@
+---
+output:
+  html_document: default
+---
+
+# Goose-GMSE
+
+## Projecting population size under uncertainty and yearly culls
+
+Goose-GMSE allows the user to easily run a series of population models for the Islay population of Greenland Barnacle 
+Goose _Branta leucopsis_. Full details of this model, its background, assumptions and limitations are detailed in 
+[SNH Research Report 1039 - Development of a population model tool to predict shooting levels of Greenland barnacle geese on Islay](https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland). 
+It is expected that the user of this model interface is familiar with that report and its contents; the information 
+provided here and under the "Help" tab __is intended as a summary only__, and only pertains to the use of this interface 
+application itself.
+
+### Model summary
+The models used here are based on logistic growth models, where population carrying capacity and growth rate are 
+functions of (i.e. constrained by) a number of predictor variables. In brief, these predictors are empirical data on (1) 
+previous winter goose counts on Islay (monthly and yearly averages), (2) climatic variability in previous years in both 
+Greenland during the preceding summer and on Islay during the preceding winter, (3) the available area of improved 
+grassland on Islay in previous years, (4) the numbers of geese killed (hunted) on Iceland and Greenland.  
+
+These models were structured and parameterised on the basis of previous studies of this system, e.g. [Mason et al. 2018](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/1365-2664.12969) 
+and [Trinder et al. 2014](http://www.snh.org.uk/pdfs/publications/commissioned_reports/568.pdf). The model is described 
+in more detail [here](https://www.nature.scot/snh-research-report-1039-development-population-model-tool-predict-shooting-levels-greenland).  
+
+Uncertainty in population numbers in previous years is implemented in two ways. First, observation uncertainty is 
+taken as a fixed variance derived from the intra-winter differences in counts made on subsequent days. This observation 
+uncertainty cannot currently be changed by the user. Second, uncertainty regarding environmental conditions is currently 
+represented by randomly sampling from environmental data measured over previous years and re-running the population 
+models a given number of times (no. of simulations set by the user).
+
+### Running the model
+___Please choose and load a data set with previous years' data in the top of the menu on the left___, and set the desired 
+modelling parameters. Then press "run simulations" (<span style="color: red;">note</span> that this may take a few minutes 
+to complete particularly if a large number of years or simulations are chosen).
+
+More information, e.g. on the formatting of the input data set and the simulation parameters can be found in the Help tab.

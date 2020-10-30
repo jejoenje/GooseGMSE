@@ -1,0 +1,90 @@
+---
+output:
+  word_document:
+    reference_docx: word_template.docx
+---
+
+```{r, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE)
+library(flextable)
+library(markdown)
+source('goose_predict_gui.R')
+load('input.Rdata')
+load('sims.Rdata')
+load('output_summary.Rdata')
+load('in_summary.Rdata')
+load('cull_summary.Rdata')
+```
+
+# Goose-GMSE simulation summary report
+
+### Generated on `r format(Sys.time(), "%d %B %Y %H:%M")`
+
+## Input parameters
+_Table 1. Input parameter values._   
+```{r inputpars, ft.align = "left"}
+#kable(in_summary, booktabs = T) %>% kable_styling(full_width = F)
+#kable(in_summary, booktabs = T, full_width=F)
+#kable(in_summary, full_width=F)
+#kable(in_summary)
+#flextable(in_summary, col_keys = c("Parameter", "Value"))
+
+# Table width
+# 
+# By default, table width is fixed. This setting allows to have the same rendering with Word, HTML and PowerPoint formats.
+# You can use another setting with function set_table_properties() when argument layout is set to ‘autofit’, an algorithm 
+# implemented by HTML and Word.
+# When layout is set to autofit, you can also size the table along an available width with argument width (default to 1 
+# that means 100% of the available width).
+input_tab = flextable(data = in_summary, col_keys = c("Parameter","Value"))
+input_tab = set_header_labels(input_tab, 
+                              Parameter = "Parameter", 
+                              Value = "Value")
+input_tab = align(input_tab, align = "left", part = "all")
+#input_tab = theme_vanilla(input_tab)
+input_tab = autofit(input_tab)
+#input_tab = set_table_properties(input_tab, layout = "autofit")
+#input_tab = set_table_properties(input_tab, width = 0.8, layout = "autofit")
+input_tab
+```
+
+## Output
+```{r output1, ft.align = "left"}
+include_graphics('./mainPlot.png')
+#include_graphics('./zoomPlot.png')
+```
+  
+_Figure 1. Observed and projected goose population trajectories._  
+_Solid black dots and lines: the observed mean annual goose population counts on Islay to date._  
+_Red lines: projected future mean annual goose populations on Islay; one for each simulation run._  
+_Dashed red lines (if calculated and plotted): mean upper and lower 95% quantiles of mean goose population counts on Islay, across all simulations. This takes account of parameter uncertainty in predictor variables._  
+<br>
+<br>
+
+### Output summary
+```{r output2}
+output_summary[[3]][[1]]
+```
+
+## Numbers culled per projected year
+
+_Table 2. Summary of mean projected population size in each year, and the mean, standard deviation, minimum and maximum number of geese culled per year, across all simulations._  
+```{r culled, ft.align = "left"}
+names(cull_summary) <- c("Year","MeanPop","MeanCulled","SDCulled","MinCulled","MaxCulled")
+#kable(cull_summary, booktabs = T, full_width = F)
+#kable(cull_summary, full_width = F)
+output_tab = flextable(data = cull_summary)
+output_tab = set_header_labels(output_tab, 
+                               Year = "Year", 
+                               MeanPop = "Mean projected\npop. size",
+                               MeanCulled = "Mean\nculled",
+                               SDCulled = "SD\nculled",
+                               MinCulled = "Min. culled",
+                               MaxCulled = "Max. culled")
+output_tab = align(output_tab, align = "left", part = "all")
+output_tab = width(output_tab, j = 2, width = 1.5)
+#output_tab = autofit(output_tab)
+output_tab
+```
+

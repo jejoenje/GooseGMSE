@@ -72,7 +72,7 @@ ui <- fluidPage(
                   value = 2),
       
       sliderInput("sims_in", "Number of simulations:",
-                  min = 2, max = 1000, value = 2, step=2),
+                  min = 5, max = 1000, value = 5, step=5),
       
       sliderInput("target_in", "Population target:",
                   min = 5000, max = 50000,

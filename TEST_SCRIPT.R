@@ -14,7 +14,8 @@ extinct <- FALSE
 prev_params <- NULL
 
 input = list()
-input$input_name$datapath = "/home/jeroen/Downloads/Stirling_model_GBG_input_file_-_Oct_20.csv"
+### UNCOMMENT THIS AND SET TO EXAMPLE FILE TARGET:
+#input$input_name$datapath = "/home/jeroen/Downloads/Stirling_model_GBG_input_file_-_Oct_20.csv"
 input$sims_in = 10
 input$yrs_in = 2
 input$maxHB_in = 4000

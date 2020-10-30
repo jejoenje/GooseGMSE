@@ -5,9 +5,8 @@ account: jejoenje
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1757771
-bundleId: 2774102
+bundleId: 3800209
 url: https://jejoenje.shinyapps.io/GooseGMSE_TEST/
-when: 1580824087.96549
+when: 1604055142.68175
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|cl_log.txt|Count-AIG_relationship.R|cull_summary.Rdata|debug.R|debug2.R|Fig7_and_8_data.Rdata|Fig8.R|Figs_4_and_5.R|Figs7_and_8_simulations.R|Figs7_and_8.R|Figure7.tiff|Figure8.tiff|Figure9.tiff|file.log|file.pdf|file6e39499d4023.log|file6e3979658db6.log|ggmse_default_test_pars.R|ggmse_test_pars.R|goose_data.csv|goosegmse_output.html|goosegmse_output.log|goosegmse_output.pdf|in_summary.Rdata|input.Rdata|mainPlot.png|Manual_check_predictions_10July2019.csv|model_eq_july2019.Rmd|output_summary.Rdata|README.md|report.html|sims.Rdata|tests_for_parallel.R|word_document.log|word_document.pdf|zoomPlot.png
